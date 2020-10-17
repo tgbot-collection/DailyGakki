@@ -7,15 +7,10 @@ package main
 import (
 	"fmt"
 	tb "gopkg.in/tucnak/telebot.v2"
-	"io/ioutil"
-	"math/rand"
-	"path/filepath"
-	"time"
 )
 
 func startHandler(m *tb.Message) {
 	_ = b.Notify(m.Sender, tb.Typing)
-	// TODO add album
 	_, _ = b.Send(m.Sender, "欢迎来到每日最可爱的Gakki！\n我会每天定是为你发送最可爱的Gakki！")
 }
 
@@ -47,7 +42,6 @@ func newHandler(m *tb.Message) {
 }
 
 func settingsHandler(m *tb.Message) {
-
 	_ = b.Notify(m.Sender, tb.Typing)
 	_, _ = b.Send(m.Sender, "在这里可以设置每日推送时间和每日推送次数")
 	var btns []tb.Btn
@@ -71,39 +65,30 @@ func settingsHandler(m *tb.Message) {
 //	b.Handle(&btn, fun)
 //}
 
-func ChoosePhotos(count int) (paths []string) {
-	photoMap := listAll(photos)
-	rand.Seed(time.Now().Unix())
-	for i := 1; i <= count; i++ {
-		index := rand.Intn(len(photoMap))
-		paths = append(paths, photoMap[index])
-		delete(photoMap, index)
-	}
-
-	return
-}
-
-func listAll(path string) (photo map[int]string) {
-	photo = make(map[int]string)
-	files, _ := ioutil.ReadDir(path)
-	var start = 0
-	for _, fi := range files {
-		if !fi.IsDir() {
-			photo[start] = filepath.Join(path, fi.Name())
-			start += 1
-		}
-	}
-	return
-}
-
 func subHandler(m *tb.Message) {
 	_ = b.Notify(m.Sender, tb.Typing)
 	_, _ = b.Send(m.Sender, "已经订阅成功啦！将在每晚17:00准时为你推送最可爱的Gakki！")
-
+	// 读取文件，增加对象，然后写入
+	var this = User{
+		ChatId: fmt.Sprintf("%v", m.Sender.ID),
+		Count:  "",
+		Time:   0,
+	}
+	currentDB := readJSON()
+	add(currentDB, this)
 }
 
 func unsubHandler(m *tb.Message) {
 	_ = b.Notify(m.Sender, tb.Typing)
 	_, _ = b.Send(m.Sender, "Gakki含泪挥手告别😭")
+	// 读取文件，增加对象，然后写入
+
+	var this = User{
+		ChatId: fmt.Sprintf("%v", m.Sender.ID),
+		Count:  "",
+		Time:   0,
+	}
+	currentDB := readJSON()
+	remove(currentDB, this)
 
 }
