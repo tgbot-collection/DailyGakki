@@ -86,7 +86,7 @@ func subHandler(m *tb.Message) {
 	log.Infof("Sub command: %d", m.Sender.ID)
 
 	_ = b.Notify(m.Sender, tb.UploadingPhoto)
-	filename := "start.gif"
+	filename := "sub.gif"
 	data, _ := Asset(filepath.Join("images", filename))
 	log.Infof("Find %s from memory...", filename)
 	p := &tb.Animation{File: tb.FromReader(bytes.NewReader(data)), FileName: filename}
@@ -109,7 +109,7 @@ func unsubHandler(m *tb.Message) {
 	log.Infof("Unsub command: %d", m.Sender.ID)
 
 	_ = b.Notify(m.Sender, tb.UploadingPhoto)
-	filename := "start.gif"
+	filename := "unsub.gif"
 	data, _ := Asset(filepath.Join("images", filename))
 	log.Infof("Find %s from memory...", filename)
 	p := &tb.Animation{File: tb.FromReader(bytes.NewReader(data)), FileName: filename}
