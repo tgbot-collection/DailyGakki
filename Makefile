@@ -1,6 +1,7 @@
 OS = darwin linux windows
 ARCH = amd64
 default:
+	git pull
 	@echo "Installing dependencies..."
 	@go get -u github.com/go-bindata/go-bindata/...
 	@echo "Build static files..."
@@ -10,6 +11,7 @@ default:
 
 
 all:
+	git pull
 	make asset
 	@echo "Build all platform executables..."
 	@for o in $(OS) ; do            \
