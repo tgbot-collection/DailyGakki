@@ -13,37 +13,39 @@ import (
 )
 
 func startHandler(m *tb.Message) {
-	log.Infof("Start command: %d", m.Sender.ID)
-
-	_ = b.Notify(m.Sender, tb.UploadingPhoto)
+	caption := "欢迎来到每日最可爱的Gakki！\n我会每天定是为你发送最可爱的Gakki！"
 	filename := "start.gif"
+
+	log.Infof("Start command: %d", m.Sender.ID)
+	_ = b.Notify(m.Sender, tb.UploadingPhoto)
 	data, _ := Asset(filepath.Join("images", filename))
 	log.Infof("Find %s from memory...", filename)
-	p := &tb.Animation{File: tb.FromReader(bytes.NewReader(data)), FileName: filename}
-	_, err := b.Send(m.Sender, p)
-	log.Warnf("%s send failed %v", filename, err)
 
-	_ = b.Notify(m.Sender, tb.Typing)
-	_, _ = b.Send(m.Sender, "欢迎来到每日最可爱的Gakki！\n我会每天定是为你发送最可爱的Gakki！")
+	p := &tb.Animation{File: tb.FromReader(bytes.NewReader(data)), FileName: filename, Caption: caption}
+	_, err := b.Send(m.Sender, p)
+	if err != nil {
+		log.Warnf("%s send failed %v", filename, err)
+	}
 
 }
 
 func aboutHandler(m *tb.Message) {
-	log.Infof("About command: %d", m.Sender.ID)
-
-	_ = b.Notify(m.Sender, tb.UploadingPhoto)
+	caption := "欢迎来到每日最可爱的Gakki！\n" +
+		"开发者：@BennyThink\n" +
+		"GitHub: https://github.com/BennyThink/DailyGakki/" +
+		"Google Photos 地址：" + album
 	filename := "about.gif"
+
+	log.Infof("About command: %d", m.Sender.ID)
+	_ = b.Notify(m.Sender, tb.UploadingPhoto)
 	data, _ := Asset(filepath.Join("images", filename))
 	log.Infof("Find %s from memory...", filename)
-	p := &tb.Animation{File: tb.FromReader(bytes.NewReader(data)), FileName: filename}
-	_, err := b.Send(m.Sender, p)
-	log.Warnf("%s send failed %v", filename, err)
 
-	_ = b.Notify(m.Sender, tb.Typing)
-	_, _ = b.Send(m.Sender, "欢迎来到每日最可爱的Gakki！\n"+
-		"开发者：@BennyThink\n"+
-		"GitHub: https://github.com/BennyThink/DailyGakki/"+
-		"Google Photos 地址："+album)
+	p := &tb.Animation{File: tb.FromReader(bytes.NewReader(data)), FileName: filename, Caption: caption}
+	_, err := b.Send(m.Sender, p)
+	if err != nil {
+		log.Warnf("%s send failed %v", filename, err)
+	}
 
 }
 
@@ -66,7 +68,8 @@ func settingsHandler(m *tb.Message) {
 	var btns []tb.Btn
 	var selector = &tb.ReplyMarkup{}
 
-	btn := selector.Data("Placeholder", fmt.Sprintf("Placeholder%s%d", "Placeholder", m.Sender.ID), "Placeholder")
+	btn := selector.Data("Placeholder", fmt.Sprintf("Placeholder%s%d",
+		"Placeholder", m.Sender.ID), "Placeholder")
 	//registerButtonNextStep(btn, "addServiceButton")
 	btns = append(btns, btn)
 
@@ -85,18 +88,20 @@ func settingsHandler(m *tb.Message) {
 //}
 
 func subHandler(m *tb.Message) {
-	log.Infof("Sub command: %d", m.Sender.ID)
-
-	_ = b.Notify(m.Sender, tb.UploadingPhoto)
+	caption := "已经订阅成功啦！将在每晚18:11准时为你推送最可爱的Gakki！"
 	filename := "sub.gif"
+
+	log.Infof("Sub command: %d", m.Sender.ID)
+	_ = b.Notify(m.Sender, tb.UploadingPhoto)
 	data, _ := Asset(filepath.Join("images", filename))
 	log.Infof("Find %s from memory...", filename)
-	p := &tb.Animation{File: tb.FromReader(bytes.NewReader(data)), FileName: filename}
-	_, err := b.Send(m.Sender, p)
-	log.Warnf("%s send failed %v", filename, err)
 
-	_ = b.Notify(m.Sender, tb.Typing)
-	_, _ = b.Send(m.Sender, "已经订阅成功啦！将在每晚18:11准时为你推送最可爱的Gakki！")
+	p := &tb.Animation{File: tb.FromReader(bytes.NewReader(data)), FileName: filename, Caption: caption}
+	_, err := b.Send(m.Sender, p)
+	if err != nil {
+		log.Warnf("%s send failed %v", filename, err)
+	}
+
 	// 读取文件，增加对象，然后写入
 	var this = User{
 		ChatId: m.Sender.ID,
@@ -109,18 +114,22 @@ func subHandler(m *tb.Message) {
 }
 
 func unsubHandler(m *tb.Message) {
-	log.Infof("Unsub command: %d", m.Sender.ID)
-
-	_ = b.Notify(m.Sender, tb.UploadingPhoto)
+	caption := "Gakki含泪挥手告别😭"
 	filename := "unsub.gif"
+
+	log.Infof("Unsub command: %d", m.Sender.ID)
+	_ = b.Notify(m.Sender, tb.UploadingPhoto)
 	data, _ := Asset(filepath.Join("images", filename))
 	log.Infof("Find %s from memory...", filename)
-	p := &tb.Animation{File: tb.FromReader(bytes.NewReader(data)), FileName: filename}
+
+	p := &tb.Animation{File: tb.FromReader(bytes.NewReader(data)), FileName: filename, Caption: caption}
 	_, err := b.Send(m.Sender, p)
-	log.Warnf("%s send failed %v", filename, err)
+	if err != nil {
+		log.Warnf("%s send failed %v", filename, err)
+	}
 
 	_ = b.Notify(m.Sender, tb.Typing)
-	_, _ = b.Send(m.Sender, "Gakki含泪挥手告别😭")
+	_, _ = b.Send(m.Sender, "😭")
 	// 读取文件，增加对象，然后写入
 
 	var this = User{
@@ -134,12 +143,11 @@ func unsubHandler(m *tb.Message) {
 }
 
 func messageHandler(m *tb.Message) {
+	caption := "私は　今でも空と恋をしています。"
+	var filename string
+
 	log.Infof("Message Handler: %d", m.Sender.ID)
 
-	_ = b.Notify(m.Sender, tb.Typing)
-	_, _ = b.Send(m.Sender, "私は　今でも空と恋をしています。")
-
-	var filename string
 	switch m.Text {
 	case "😘":
 		filename = "kiss.gif"
@@ -160,13 +168,17 @@ func messageHandler(m *tb.Message) {
 	default:
 		filename = "default.gif"
 	}
+
 	log.Infof("Choose %s for text %s", filename, m.Text)
 	data, _ := Asset(filepath.Join("images", filename))
 
 	log.Infof("Send %s now...", filename)
 	_ = b.Notify(m.Sender, tb.UploadingPhoto)
-	p := &tb.Animation{File: tb.FromReader(bytes.NewReader(data)), FileName: filename}
+	p := &tb.Animation{File: tb.FromReader(bytes.NewReader(data)), FileName: filename, Caption: caption}
 	_, err := b.Send(m.Sender, p)
-	log.Warnf("%s send failed %v", filename, err)
+	if err != nil {
+		log.Warnf("%s send failed %v", filename, err)
+
+	}
 
 }
