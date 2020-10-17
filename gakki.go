@@ -44,8 +44,9 @@ func main() {
 ▌ ▌▝▀▖▄▐ ▌ ▌ ▌▄▖▝▀▖▌▗▘▌▗▘▄
 ▌ ▌▞▀▌▐▐ ▚▄▌ ▌ ▌▞▀▌▛▚ ▛▚ ▐
 ▀▀ ▝▀▘▀▘▘▗▄▘ ▝▀ ▝▀▘▘ ▘▘ ▘▀▘
-By %s at %s
-`, time.Now(), "BennyThink")
+By %s %s
+ガッキー 最高で　❤️
+`, "BennyThink", time.Now())
 
 	fmt.Printf("\n %c[1;32m%s%c[0m\n\n", 0x1B, banner, 0x1B)
 
