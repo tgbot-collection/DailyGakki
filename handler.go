@@ -14,8 +14,10 @@ import (
 
 func startHandler(m *tb.Message) {
 	_ = b.Notify(m.Sender, tb.UploadingPhoto)
-	p := &tb.Photo{File: tb.FromDisk("start.gif")}
-	_, _ = b.SendAlbum(m.Sender, tb.Album{p})
+	filename := "start.gif"
+	data, _ := Asset(filepath.Join("images", filename))
+	p := &tb.Animation{File: tb.FromReader(bytes.NewReader(data)), FileName: filename}
+	_, _ = b.Send(m.Sender, p)
 
 	_ = b.Notify(m.Sender, tb.Typing)
 	_, _ = b.Send(m.Sender, "欢迎来到每日最可爱的Gakki！\n我会每天定是为你发送最可爱的Gakki！")
@@ -24,8 +26,10 @@ func startHandler(m *tb.Message) {
 
 func aboutHandler(m *tb.Message) {
 	_ = b.Notify(m.Sender, tb.UploadingPhoto)
-	p := &tb.Photo{File: tb.FromDisk("about.gif")}
-	_, _ = b.SendAlbum(m.Sender, tb.Album{p})
+	filename := "about.gif"
+	data, _ := Asset(filepath.Join("images", filename))
+	p := &tb.Animation{File: tb.FromReader(bytes.NewReader(data)), FileName: filename}
+	_, _ = b.Send(m.Sender, p)
 
 	_ = b.Notify(m.Sender, tb.Typing)
 	_, _ = b.Send(m.Sender, "欢迎来到每日最可爱的Gakki！\n"+
@@ -70,8 +74,10 @@ func settingsHandler(m *tb.Message) {
 
 func subHandler(m *tb.Message) {
 	_ = b.Notify(m.Sender, tb.UploadingPhoto)
-	p := &tb.Photo{File: tb.FromDisk("sub.gif")}
-	_, _ = b.SendAlbum(m.Sender, tb.Album{p})
+	filename := "start.gif"
+	data, _ := Asset(filepath.Join("images", filename))
+	p := &tb.Animation{File: tb.FromReader(bytes.NewReader(data)), FileName: filename}
+	_, _ = b.Send(m.Sender, p)
 
 	_ = b.Notify(m.Sender, tb.Typing)
 	_, _ = b.Send(m.Sender, "已经订阅成功啦！将在每晚18:11准时为你推送最可爱的Gakki！")
@@ -88,8 +94,10 @@ func subHandler(m *tb.Message) {
 
 func unsubHandler(m *tb.Message) {
 	_ = b.Notify(m.Sender, tb.UploadingPhoto)
-	p := &tb.Photo{File: tb.FromDisk("unsub.gif")}
-	_, _ = b.SendAlbum(m.Sender, tb.Album{p})
+	filename := "start.gif"
+	data, _ := Asset(filepath.Join("images", filename))
+	p := &tb.Animation{File: tb.FromReader(bytes.NewReader(data)), FileName: filename}
+	_, _ = b.Send(m.Sender, p)
 
 	_ = b.Notify(m.Sender, tb.Typing)
 	_, _ = b.Send(m.Sender, "Gakki含泪挥手告别😭")
