@@ -13,9 +13,12 @@ import (
 )
 
 func startHandler(m *tb.Message) {
+	log.Infof("Start command: %d", m.Sender.ID)
+
 	_ = b.Notify(m.Sender, tb.UploadingPhoto)
 	filename := "start.gif"
 	data, _ := Asset(filepath.Join("images", filename))
+	log.Infof("Find %s from memory...", filename)
 	p := &tb.Animation{File: tb.FromReader(bytes.NewReader(data)), FileName: filename}
 	_, _ = b.Send(m.Sender, p)
 
@@ -25,9 +28,12 @@ func startHandler(m *tb.Message) {
 }
 
 func aboutHandler(m *tb.Message) {
+	log.Infof("About command: %d", m.Sender.ID)
+
 	_ = b.Notify(m.Sender, tb.UploadingPhoto)
 	filename := "about.gif"
 	data, _ := Asset(filepath.Join("images", filename))
+	log.Infof("Find %s from memory...", filename)
 	p := &tb.Animation{File: tb.FromReader(bytes.NewReader(data)), FileName: filename}
 	_, _ = b.Send(m.Sender, p)
 
@@ -40,6 +46,8 @@ func aboutHandler(m *tb.Message) {
 }
 
 func newHandler(m *tb.Message) {
+	log.Infof("New command: %d", m.Sender.ID)
+
 	// 默认发送3张
 	_ = b.Notify(m.Sender, tb.Typing)
 	sendAlbum := generatePhotos()
@@ -49,6 +57,8 @@ func newHandler(m *tb.Message) {
 }
 
 func settingsHandler(m *tb.Message) {
+	log.Infof("Settings command: %d", m.Sender.ID)
+
 	_ = b.Notify(m.Sender, tb.Typing)
 	_, _ = b.Send(m.Sender, "在这里可以设置每日推送时间和每日推送次数")
 	var btns []tb.Btn
@@ -73,9 +83,12 @@ func settingsHandler(m *tb.Message) {
 //}
 
 func subHandler(m *tb.Message) {
+	log.Infof("Sub command: %d", m.Sender.ID)
+
 	_ = b.Notify(m.Sender, tb.UploadingPhoto)
 	filename := "start.gif"
 	data, _ := Asset(filepath.Join("images", filename))
+	log.Infof("Find %s from memory...", filename)
 	p := &tb.Animation{File: tb.FromReader(bytes.NewReader(data)), FileName: filename}
 	_, _ = b.Send(m.Sender, p)
 
@@ -93,9 +106,12 @@ func subHandler(m *tb.Message) {
 }
 
 func unsubHandler(m *tb.Message) {
+	log.Infof("Unsub command: %d", m.Sender.ID)
+
 	_ = b.Notify(m.Sender, tb.UploadingPhoto)
 	filename := "start.gif"
 	data, _ := Asset(filepath.Join("images", filename))
+	log.Infof("Find %s from memory...", filename)
 	p := &tb.Animation{File: tb.FromReader(bytes.NewReader(data)), FileName: filename}
 	_, _ = b.Send(m.Sender, p)
 
@@ -114,6 +130,8 @@ func unsubHandler(m *tb.Message) {
 }
 
 func messageHandler(m *tb.Message) {
+	log.Infof("Message Handler: %d", m.Sender.ID)
+
 	_ = b.Notify(m.Sender, tb.Typing)
 	_, _ = b.Send(m.Sender, "私は　今でも空と恋をしています。")
 
