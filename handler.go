@@ -24,18 +24,7 @@ func aboutHandler(m *tb.Message) {
 func newHandler(m *tb.Message) {
 	// 默认发送3张
 	_ = b.Notify(m.Sender, tb.Typing)
-
-	var max = 3
-	var sendAlbum tb.Album
-
-	chosen := ChoosePhotos(max)
-	for _, photoPath := range chosen[1:max] {
-		p := &tb.Photo{File: tb.FromDisk(photoPath)}
-		sendAlbum = append(sendAlbum, p)
-	}
-	p := &tb.Photo{File: tb.FromDisk(chosen[0]), Caption: "怎么样，喜欢今日份的Gakki吗🤩"}
-	sendAlbum = append(sendAlbum, p)
-
+	sendAlbum := generatePhotos()
 	_ = b.Notify(m.Sender, tb.UploadingPhoto)
 	_, _ = b.SendAlbum(m.Sender, sendAlbum)
 
@@ -70,7 +59,7 @@ func subHandler(m *tb.Message) {
 	_, _ = b.Send(m.Sender, "已经订阅成功啦！将在每晚17:00准时为你推送最可爱的Gakki！")
 	// 读取文件，增加对象，然后写入
 	var this = User{
-		ChatId: fmt.Sprintf("%v", m.Sender.ID),
+		ChatId: m.Sender.ID,
 		Count:  "",
 		Time:   0,
 	}
@@ -84,11 +73,25 @@ func unsubHandler(m *tb.Message) {
 	// 读取文件，增加对象，然后写入
 
 	var this = User{
-		ChatId: fmt.Sprintf("%v", m.Sender.ID),
+		ChatId: m.Sender.ID,
 		Count:  "",
 		Time:   0,
 	}
 	currentDB := readJSON()
 	remove(currentDB, this)
 
+}
+
+func generatePhotos() (sendAlbum tb.Album) {
+	var max = 3
+	//var sendAlbum tb.Album
+
+	chosen := ChoosePhotos(max)
+	for _, photoPath := range chosen[1:max] {
+		p := &tb.Photo{File: tb.FromDisk(photoPath)}
+		sendAlbum = append(sendAlbum, p)
+	}
+	p := &tb.Photo{File: tb.FromDisk(chosen[0]), Caption: "怎么样，喜欢今日份的Gakki吗🤩"}
+	sendAlbum = append(sendAlbum, p)
+	return
 }
