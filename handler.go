@@ -5,20 +5,34 @@
 package main
 
 import (
+	"bytes"
 	"fmt"
+	log "github.com/sirupsen/logrus"
 	tb "gopkg.in/tucnak/telebot.v2"
+	"path/filepath"
 )
 
 func startHandler(m *tb.Message) {
+	_ = b.Notify(m.Sender, tb.UploadingPhoto)
+	p := &tb.Photo{File: tb.FromDisk("start.gif")}
+	_, _ = b.SendAlbum(m.Sender, tb.Album{p})
+
 	_ = b.Notify(m.Sender, tb.Typing)
 	_, _ = b.Send(m.Sender, "欢迎来到每日最可爱的Gakki！\n我会每天定是为你发送最可爱的Gakki！")
+
 }
 
 func aboutHandler(m *tb.Message) {
+	_ = b.Notify(m.Sender, tb.UploadingPhoto)
+	p := &tb.Photo{File: tb.FromDisk("about.gif")}
+	_, _ = b.SendAlbum(m.Sender, tb.Album{p})
+
 	_ = b.Notify(m.Sender, tb.Typing)
 	_, _ = b.Send(m.Sender, "欢迎来到每日最可爱的Gakki！\n"+
 		"开发者：@BennyThink\n"+
+		"GitHub: https://github.com/BennyThink/DailyGakki/"+
 		"Google Photos 地址："+album)
+
 }
 
 func newHandler(m *tb.Message) {
@@ -55,6 +69,10 @@ func settingsHandler(m *tb.Message) {
 //}
 
 func subHandler(m *tb.Message) {
+	_ = b.Notify(m.Sender, tb.UploadingPhoto)
+	p := &tb.Photo{File: tb.FromDisk("sub.gif")}
+	_, _ = b.SendAlbum(m.Sender, tb.Album{p})
+
 	_ = b.Notify(m.Sender, tb.Typing)
 	_, _ = b.Send(m.Sender, "已经订阅成功啦！将在每晚18:11准时为你推送最可爱的Gakki！")
 	// 读取文件，增加对象，然后写入
@@ -65,9 +83,14 @@ func subHandler(m *tb.Message) {
 	}
 	currentDB := readJSON()
 	add(currentDB, this)
+
 }
 
 func unsubHandler(m *tb.Message) {
+	_ = b.Notify(m.Sender, tb.UploadingPhoto)
+	p := &tb.Photo{File: tb.FromDisk("unsub.gif")}
+	_, _ = b.SendAlbum(m.Sender, tb.Album{p})
+
 	_ = b.Notify(m.Sender, tb.Typing)
 	_, _ = b.Send(m.Sender, "Gakki含泪挥手告别😭")
 	// 读取文件，增加对象，然后写入
@@ -82,16 +105,40 @@ func unsubHandler(m *tb.Message) {
 
 }
 
-func generatePhotos() (sendAlbum tb.Album) {
-	var max = 3
-	//var sendAlbum tb.Album
+func messageHandler(m *tb.Message) {
+	_ = b.Notify(m.Sender, tb.Typing)
+	_, _ = b.Send(m.Sender, "私は　今でも空と恋をしています。")
 
-	chosen := ChoosePhotos(max)
-	for _, photoPath := range chosen[1:max] {
-		p := &tb.Photo{File: tb.FromDisk(photoPath)}
-		sendAlbum = append(sendAlbum, p)
+	var filename string
+	switch m.Text {
+	case "😘":
+		filename = "kiss.gif"
+	case "😚":
+		filename = "kiss.gif"
+	case "😗":
+		filename = "kiss.gif"
+	case "❤️":
+		filename = "heart1.gif"
+	case "❤️❤️":
+		filename = "heart2.gif"
+	case "❤️❤️❤️":
+		filename = "heart3.gif"
+	case "🌹":
+		filename = "rose.gif"
+	case "🦎":
+		filename = "lizard.gif"
+	default:
+		filename = "default.gif"
 	}
-	p := &tb.Photo{File: tb.FromDisk(chosen[0]), Caption: "怎么样，喜欢今日份的Gakki吗🤩"}
-	sendAlbum = append(sendAlbum, p)
-	return
+	log.Infof("Choose %s for text %s", filename, m.Text)
+	data, err := Asset(filepath.Join("images", filename))
+	if err != nil {
+		log.Warningf("File not found %v", err)
+	} else {
+		log.Infof("Send %s now...", filename)
+		_ = b.Notify(m.Sender, tb.UploadingPhoto)
+		p := &tb.Animation{File: tb.FromReader(bytes.NewReader(data)), FileName: filename}
+		_, _ = b.Send(m.Sender, p)
+	}
+
 }

@@ -60,6 +60,8 @@ By %s at %s
 	b.Handle("/subscribe", subHandler)
 	b.Handle("/unsubscribe", unsubHandler)
 
+	b.Handle(tb.OnText, messageHandler)
+
 	log.Infoln("I'm running...")
 	b.Start()
 

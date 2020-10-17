@@ -6,6 +6,8 @@ package main
 
 import (
 	"encoding/json"
+	log "github.com/sirupsen/logrus"
+	tb "gopkg.in/tucnak/telebot.v2"
 	"io/ioutil"
 	"math/rand"
 	"os"
@@ -14,7 +16,7 @@ import (
 )
 
 func readJSON() []User {
-
+	log.Infoln("Read json file...")
 	jsonFile, _ := os.Open("database.json")
 	decoder := json.NewDecoder(jsonFile)
 
@@ -26,6 +28,8 @@ func readJSON() []User {
 }
 
 func add(d []User, data User) {
+	log.Infof("Add subscriber %d", data.ChatId)
+
 	// check and then add
 	var shouldWrite = true
 	for _, v := range d {
@@ -42,6 +46,8 @@ func add(d []User, data User) {
 }
 
 func remove(d []User, data User) {
+	log.Infof("Delete subscriber %d", data.ChatId)
+
 	var db []User
 	var shouldWrite = false
 
@@ -64,6 +70,8 @@ func removeElement(s []User, i int) []User {
 }
 
 func listAll(path string) (photo map[int]string) {
+	log.Infoln("List all photos...")
+
 	photo = make(map[int]string)
 	files, _ := ioutil.ReadDir(path)
 	var start = 0
@@ -77,6 +85,7 @@ func listAll(path string) (photo map[int]string) {
 }
 
 func ChoosePhotos(count int) (paths []string) {
+	log.Infof("Choose %d photo(s)", count)
 	photoMap := listAll(photos)
 	rand.Seed(time.Now().Unix())
 	for i := 1; i <= count; i++ {
@@ -85,5 +94,19 @@ func ChoosePhotos(count int) (paths []string) {
 		delete(photoMap, index)
 	}
 
+	return
+}
+
+func generatePhotos() (sendAlbum tb.Album) {
+	var max = 3
+	//var sendAlbum tb.Album
+
+	chosen := ChoosePhotos(max)
+	for _, photoPath := range chosen[1:max] {
+		p := &tb.Photo{File: tb.FromDisk(photoPath)}
+		sendAlbum = append(sendAlbum, p)
+	}
+	p := &tb.Photo{File: tb.FromDisk(chosen[0]), Caption: "怎么样，喜欢今日份的Gakki吗🤩"}
+	sendAlbum = append(sendAlbum, p)
 	return
 }

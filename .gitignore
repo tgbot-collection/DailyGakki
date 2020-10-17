@@ -19,3 +19,4 @@
 /.idea/DailyGakki.iml
 /.idea/*
 /photos/*
+assets.go
