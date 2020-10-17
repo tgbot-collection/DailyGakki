@@ -21,7 +21,7 @@ func scheduler() {
 		m := tb.Message{
 			Sender: &tb.User{ID: v.ChatId},
 		}
-		time.Sleep(time.Second * 5)
+		time.Sleep(time.Second * 30)
 		_ = b.Notify(m.Sender, tb.Typing)
 		sendAlbum := generatePhotos()
 		_ = b.Notify(m.Sender, tb.UploadingPhoto)

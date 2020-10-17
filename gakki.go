@@ -61,6 +61,7 @@ By %s %s
 	b.Handle("/unsubscribe", unsubHandler)
 
 	b.Handle(tb.OnText, messageHandler)
+	b.Handle("/ping", pingHandler)
 
 	log.Infoln("I'm running...")
 	b.Start()
