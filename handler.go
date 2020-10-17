@@ -20,7 +20,8 @@ func startHandler(m *tb.Message) {
 	data, _ := Asset(filepath.Join("images", filename))
 	log.Infof("Find %s from memory...", filename)
 	p := &tb.Animation{File: tb.FromReader(bytes.NewReader(data)), FileName: filename}
-	_, _ = b.Send(m.Sender, p)
+	_, err := b.Send(m.Sender, p)
+	log.Warnf("%s send failed %v", filename, err)
 
 	_ = b.Notify(m.Sender, tb.Typing)
 	_, _ = b.Send(m.Sender, "欢迎来到每日最可爱的Gakki！\n我会每天定是为你发送最可爱的Gakki！")
@@ -35,7 +36,8 @@ func aboutHandler(m *tb.Message) {
 	data, _ := Asset(filepath.Join("images", filename))
 	log.Infof("Find %s from memory...", filename)
 	p := &tb.Animation{File: tb.FromReader(bytes.NewReader(data)), FileName: filename}
-	_, _ = b.Send(m.Sender, p)
+	_, err := b.Send(m.Sender, p)
+	log.Warnf("%s send failed %v", filename, err)
 
 	_ = b.Notify(m.Sender, tb.Typing)
 	_, _ = b.Send(m.Sender, "欢迎来到每日最可爱的Gakki！\n"+
@@ -90,7 +92,8 @@ func subHandler(m *tb.Message) {
 	data, _ := Asset(filepath.Join("images", filename))
 	log.Infof("Find %s from memory...", filename)
 	p := &tb.Animation{File: tb.FromReader(bytes.NewReader(data)), FileName: filename}
-	_, _ = b.Send(m.Sender, p)
+	_, err := b.Send(m.Sender, p)
+	log.Warnf("%s send failed %v", filename, err)
 
 	_ = b.Notify(m.Sender, tb.Typing)
 	_, _ = b.Send(m.Sender, "已经订阅成功啦！将在每晚18:11准时为你推送最可爱的Gakki！")
@@ -113,7 +116,8 @@ func unsubHandler(m *tb.Message) {
 	data, _ := Asset(filepath.Join("images", filename))
 	log.Infof("Find %s from memory...", filename)
 	p := &tb.Animation{File: tb.FromReader(bytes.NewReader(data)), FileName: filename}
-	_, _ = b.Send(m.Sender, p)
+	_, err := b.Send(m.Sender, p)
+	log.Warnf("%s send failed %v", filename, err)
 
 	_ = b.Notify(m.Sender, tb.Typing)
 	_, _ = b.Send(m.Sender, "Gakki含泪挥手告别😭")
@@ -157,14 +161,12 @@ func messageHandler(m *tb.Message) {
 		filename = "default.gif"
 	}
 	log.Infof("Choose %s for text %s", filename, m.Text)
-	data, err := Asset(filepath.Join("images", filename))
-	if err != nil {
-		log.Warningf("File not found %v", err)
-	} else {
-		log.Infof("Send %s now...", filename)
-		_ = b.Notify(m.Sender, tb.UploadingPhoto)
-		p := &tb.Animation{File: tb.FromReader(bytes.NewReader(data)), FileName: filename}
-		_, _ = b.Send(m.Sender, p)
-	}
+	data, _ := Asset(filepath.Join("images", filename))
+
+	log.Infof("Send %s now...", filename)
+	_ = b.Notify(m.Sender, tb.UploadingPhoto)
+	p := &tb.Animation{File: tb.FromReader(bytes.NewReader(data)), FileName: filename}
+	_, err := b.Send(m.Sender, p)
+	log.Warnf("%s send failed %v", filename, err)
 
 }
