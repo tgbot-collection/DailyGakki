@@ -58,6 +58,8 @@ By %s at %s
 	b.Handle("/about", aboutHandler)
 	b.Handle("/new", newHandler)
 	b.Handle("/settings", settingsHandler)
+	b.Handle("/subscribe", subHandler)
+	b.Handle("/unsubscribe", unsubHandler)
 
 	log.Infoln("I'm running...")
 	b.Start()

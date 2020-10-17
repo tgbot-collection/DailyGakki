@@ -95,3 +95,15 @@ func listAll(path string) (photo map[int]string) {
 	}
 	return
 }
+
+func subHandler(m *tb.Message) {
+	_ = b.Notify(m.Sender, tb.Typing)
+	_, _ = b.Send(m.Sender, "已经订阅成功啦！将在每晚17:00准时为你推送最可爱的Gakki！")
+
+}
+
+func unsubHandler(m *tb.Message) {
+	_ = b.Notify(m.Sender, tb.Typing)
+	_, _ = b.Send(m.Sender, "Gakki含泪挥手告别😭")
+
+}
