@@ -56,7 +56,7 @@ func settingsHandler(m *tb.Message) {
 
 func subHandler(m *tb.Message) {
 	_ = b.Notify(m.Sender, tb.Typing)
-	_, _ = b.Send(m.Sender, "已经订阅成功啦！将在每晚17:00准时为你推送最可爱的Gakki！")
+	_, _ = b.Send(m.Sender, "已经订阅成功啦！将在每晚18:11准时为你推送最可爱的Gakki！")
 	// 读取文件，增加对象，然后写入
 	var this = User{
 		ChatId: m.Sender.ID,

@@ -5,12 +5,18 @@
 package main
 
 import (
+	log "github.com/sirupsen/logrus"
 	tb "gopkg.in/tucnak/telebot.v2"
 )
 
 func scheduler() {
+	log.Infoln("Start scheduler...")
 	sendList := readJSON()
+	log.Infof("Total count: %d", len(sendList))
+
 	for _, v := range sendList {
+		log.Infof("Send message to: %d", v.ChatId)
+
 		m := tb.Message{
 			Sender: &tb.User{ID: v.ChatId},
 		}

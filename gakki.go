@@ -51,9 +51,8 @@ By %s at %s
 	fmt.Printf("\n %c[1;32m%s%c[0m\n\n", 0x1B, banner, 0x1B)
 
 	c := cron.New()
-	_, _ = c.AddFunc("0 17 * *", scheduler)
+	_, _ = c.AddFunc("11 18 * * *", scheduler)
 	c.Start()
-
 	b.Handle("/start", startHandler)
 	b.Handle("/about", aboutHandler)
 	b.Handle("/new", newHandler)
