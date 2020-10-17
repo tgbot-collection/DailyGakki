@@ -6,35 +6,49 @@ package main
 
 import (
 	"fmt"
-	log "github.com/sirupsen/logrus"
-	"gopkg.in/tucnak/telebot.v2"
+	tb "gopkg.in/tucnak/telebot.v2"
+	"io/ioutil"
+	"math/rand"
+	"path/filepath"
+	"time"
 )
-import tb "gopkg.in/tucnak/telebot.v2"
 
-func startHandler(m *telebot.Message) {
-	_ = b.Notify(m.Sender, telebot.Typing)
-	// TODO add photos
+func startHandler(m *tb.Message) {
+	_ = b.Notify(m.Sender, tb.Typing)
+	// TODO add album
 	_, _ = b.Send(m.Sender, "欢迎来到每日最可爱的Gakki！\n我会每天定是为你发送最可爱的Gakki！")
 }
 
-func aboutHandler(m *telebot.Message) {
-	_ = b.Notify(m.Sender, telebot.Typing)
+func aboutHandler(m *tb.Message) {
+	_ = b.Notify(m.Sender, tb.Typing)
 	_, _ = b.Send(m.Sender, "欢迎来到每日最可爱的Gakki！\n"+
 		"开发者：@BennyThink\n"+
-		"Google Photos 地址："+photos)
+		"Google Photos 地址："+album)
 }
 
-func newHandler(m *telebot.Message) {
-	_ = b.Notify(m.Sender, telebot.Typing)
+func newHandler(m *tb.Message) {
+	// 默认发送3张
+	_ = b.Notify(m.Sender, tb.Typing)
 
-	p := &tb.Photo{File: tb.FromDisk("photos/yui.jpg")}
-	_, _ = b.SendAlbum(m.Sender, tb.Album{p})
-	_, _ = b.Send(m.Sender, "怎么样，喜欢今日份的Gakki吗🤩")
+	var max = 3
+	var sendAlbum tb.Album
+
+	chosen := ChoosePhotos(max)
+	for _, photoPath := range chosen[1:max] {
+		p := &tb.Photo{File: tb.FromDisk(photoPath)}
+		sendAlbum = append(sendAlbum, p)
+	}
+	p := &tb.Photo{File: tb.FromDisk(chosen[0]), Caption: "怎么样，喜欢今日份的Gakki吗🤩"}
+	sendAlbum = append(sendAlbum, p)
+
+	_ = b.Notify(m.Sender, tb.UploadingPhoto)
+	_, _ = b.SendAlbum(m.Sender, sendAlbum)
+
 }
 
-func settingsHandler(m *telebot.Message) {
+func settingsHandler(m *tb.Message) {
 
-	_ = b.Notify(m.Sender, telebot.Typing)
+	_ = b.Notify(m.Sender, tb.Typing)
 	_, _ = b.Send(m.Sender, "在这里可以设置每日推送时间和每日推送次数")
 	var btns []tb.Btn
 	var selector = &tb.ReplyMarkup{}
@@ -52,7 +66,32 @@ func settingsHandler(m *telebot.Message) {
 
 }
 
-func registerButtonNextStep(btn tb.Btn, fun func(c *tb.Callback)) {
-	log.Infoln("Registering ", btn.Unique)
-	b.Handle(&btn, fun)
+//func registerButtonNextStep(btn tb.Btn, fun func(c *tb.Callback)) {
+//	log.Infoln("Registering ", btn.Unique)
+//	b.Handle(&btn, fun)
+//}
+
+func ChoosePhotos(count int) (paths []string) {
+	photoMap := listAll(photos)
+	rand.Seed(time.Now().Unix())
+	for i := 1; i <= count; i++ {
+		index := rand.Intn(len(photoMap))
+		paths = append(paths, photoMap[index])
+		delete(photoMap, index)
+	}
+
+	return
+}
+
+func listAll(path string) (photo map[int]string) {
+	photo = make(map[int]string)
+	files, _ := ioutil.ReadDir(path)
+	var start = 0
+	for _, fi := range files {
+		if !fi.IsDir() {
+			photo[start] = filepath.Join(path, fi.Name())
+			start += 1
+		}
+	}
+	return
 }
