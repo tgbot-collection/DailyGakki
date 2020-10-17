@@ -54,17 +54,12 @@ By %s at %s
 	_, _ = c.AddFunc("*/15 * * * *", scheduler)
 	c.Start()
 
-	b.Handle("/start", startCommand)
+	b.Handle("/start", startHandler)
+	b.Handle("/about", aboutHandler)
+	b.Handle("/new", newHandler)
+	b.Handle("/settings", settingsHandler)
+
 	log.Infoln("I'm running...")
 	b.Start()
-
-}
-
-func startCommand(m *tb.Message) {
-	_ = b.Notify(m.Sender, tb.Typing)
-	_, _ = b.Send(m.Sender, "欢迎来到每日最可爱的Gakki！\n我会每天定是为你发送最可爱的Gakki！")
-}
-
-func scheduler() {
 
 }
