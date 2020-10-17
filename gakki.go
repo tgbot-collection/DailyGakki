@@ -17,7 +17,6 @@ import (
 	tb "gopkg.in/tucnak/telebot.v2"
 )
 
-var token = os.Getenv("TOKEN")
 var b, err = tb.NewBot(tb.Settings{
 	Token:  token,
 	Poller: &tb.LongPoller{Timeout: 10 * time.Second},

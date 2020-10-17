@@ -4,8 +4,11 @@
 
 package main
 
+import "os"
+
 var album = "https://album.app.goo.gl/2aLeoBiRypWRR8yY9"
-var photos = "/Users/benny/Dropbox/ガッキー"
+var photos = os.Getenv("PHOTOS")
+var token = os.Getenv("TOKEN")
 
 type User struct {
 	ChatId int `json:"chat_id"`
