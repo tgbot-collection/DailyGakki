@@ -28,7 +28,7 @@ func readJSON() []User {
 }
 
 func add(id int64) {
-	log.Infof("Add subscriber ", id)
+	log.Infof("Add subscriber %v", id)
 	currentJSON := readJSON()
 	// check and then add
 	var shouldWrite = true
@@ -51,7 +51,7 @@ func add(id int64) {
 }
 
 func remove(id int64) {
-	log.Infof("Delete subscriber ", id)
+	log.Infof("Delete subscriber %v", id)
 	currentJSON := readJSON()
 
 	var this []User
