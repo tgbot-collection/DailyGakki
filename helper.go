@@ -42,6 +42,8 @@ func add(id int64) {
 			ChatId: id,
 		})
 		file, _ := json.MarshalIndent(currentJSON, "", "\t")
+		log.Infoln("Record json %v", currentJSON)
+
 		err := ioutil.WriteFile("database.json", file, 0644)
 		if err != nil {
 			log.Errorf("Write json failed %v", err)
