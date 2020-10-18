@@ -41,9 +41,11 @@ func add(id int64) {
 		currentJSON = append(currentJSON, User{
 			ChatId: id,
 		})
-		file, _ := json.MarshalIndent(currentJSON, "", " ")
+		file, _ := json.MarshalIndent(currentJSON, "", "\t")
 		err := ioutil.WriteFile("database.json", file, 0644)
-		log.Errorf("Write json failed %v", err)
+		if err != nil {
+			log.Errorf("Write json failed %v", err)
+		}
 	}
 
 }
@@ -64,7 +66,9 @@ func remove(id int64) {
 	if shouldWrite {
 		file, _ := json.MarshalIndent(this, "", "\t")
 		err := ioutil.WriteFile("database.json", file, 0644)
-		log.Errorf("Write json failed %v", err)
+		if err != nil {
+			log.Errorf("Write json failed %v", err)
+		}
 	}
 
 }
