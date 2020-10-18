@@ -88,6 +88,15 @@ func settingsHandler(m *tb.Message) {
 //}
 
 func subHandler(m *tb.Message) {
+	// check permission first
+	canSubscribe := checkSubscribePermission(m)
+	if !canSubscribe {
+		log.Infof("Denied subscribe request for: %d", m.Sender.ID)
+		_ = b.Notify(m.Chat, tb.Typing)
+		_, _ = b.Send(m.Chat, "ええ😉只有管理员才能进行设置哦")
+		return
+	}
+
 	caption := "已经订阅成功啦！将在每晚18:11准时为你推送最可爱的Gakki！"
 	filename := "sub.gif"
 
@@ -102,18 +111,18 @@ func subHandler(m *tb.Message) {
 		log.Warnf("%s send failed %v", filename, err)
 	}
 
-	// 读取文件，增加对象，然后写入
-	var this = User{
-		ChatId: m.Sender.ID,
-		Count:  "",
-		Time:   0,
-	}
-	currentDB := readJSON()
-	add(currentDB, this)
+	add(m.Chat.ID)
 
 }
 
 func unsubHandler(m *tb.Message) {
+	canSubscribe := checkSubscribePermission(m)
+	if !canSubscribe {
+		log.Infof("Denied subscribe request for: %d", m.Sender.ID)
+		_ = b.Notify(m.Chat, tb.Typing)
+		_, _ = b.Send(m.Chat, "ええ😉只有管理员才能进行设置哦")
+		return
+	}
 	caption := "Gakki含泪挥手告别😭"
 	filename := "unsub.gif"
 
@@ -130,15 +139,9 @@ func unsubHandler(m *tb.Message) {
 
 	_ = b.Notify(m.Chat, tb.Typing)
 	_, _ = b.Send(m.Chat, "😭")
-	// 读取文件，增加对象，然后写入
 
-	var this = User{
-		ChatId: m.Sender.ID,
-		Count:  "",
-		Time:   0,
-	}
-	currentDB := readJSON()
-	remove(currentDB, this)
+	// 读取文件，增加对象，然后写入
+	remove(m.Chat.ID)
 
 }
 
@@ -186,4 +189,19 @@ func messageHandler(m *tb.Message) {
 func pingHandler(m *tb.Message) {
 	_ = b.Notify(m.Chat, tb.Typing)
 	_, _ = b.Send(m.Chat, "pong")
+}
+
+func checkSubscribePermission(m *tb.Message) (allow bool) {
+	allow = false
+	if !m.Private() {
+		admins, _ := b.AdminsOf(m.Chat)
+		for _, admin := range admins {
+			if admin.User.ID == m.Sender.ID {
+				allow = true
+			}
+		}
+	} else {
+		allow = true
+	}
+	return
 }

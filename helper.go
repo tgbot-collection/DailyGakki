@@ -27,32 +27,35 @@ func readJSON() []User {
 
 }
 
-func add(d []User, data User) {
-	log.Infof("Add subscriber %d", data.ChatId)
-
+func add(id int64) {
+	log.Infof("Add subscriber %d", id)
+	d := readJSON()
 	// check and then add
 	var shouldWrite = true
 	for _, v := range d {
-		if v.ChatId == data.ChatId {
+		if v.ChatId == id {
 			shouldWrite = false
 		}
 	}
 	if shouldWrite {
-		d = append(d, data)
+		d = append(d, User{
+			ChatId: id,
+		})
 		file, _ := json.MarshalIndent(d, "", " ")
 		_ = ioutil.WriteFile("database.json", file, 0644)
 	}
 
 }
 
-func remove(d []User, data User) {
-	log.Infof("Delete subscriber %d", data.ChatId)
+func remove(id int64) {
+	log.Infof("Delete subscriber %d", id)
+	d := readJSON()
 
 	var db []User
 	var shouldWrite = false
 
 	for index, v := range d {
-		if v.ChatId == data.ChatId {
+		if v.ChatId == id {
 			shouldWrite = true
 			db = removeElement(d, index)
 		}

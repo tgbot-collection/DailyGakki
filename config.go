@@ -11,7 +11,7 @@ var photos = os.Getenv("PHOTOS")
 var token = os.Getenv("TOKEN")
 
 type User struct {
-	ChatId int `json:"chat_id"`
+	ChatId int64 `json:"chat_id"`
 	Count  string
 	Time   int64
 }

@@ -19,7 +19,7 @@ func scheduler() {
 		log.Infof("Send message to: %d", v.ChatId)
 
 		m := tb.Message{
-			Sender: &tb.User{ID: v.ChatId},
+			Sender: &tb.User{ID: int(v.ChatId)},
 		}
 		time.Sleep(time.Second * 30)
 		_ = b.Notify(m.Sender, tb.Typing)
