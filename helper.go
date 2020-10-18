@@ -28,41 +28,43 @@ func readJSON() []User {
 }
 
 func add(id int64) {
-	log.Infof("Add subscriber %d", id)
-	d := readJSON()
+	log.Infof("Add subscriber %currentJSON", id)
+	currentJSON := readJSON()
 	// check and then add
 	var shouldWrite = true
-	for _, v := range d {
+	for _, v := range currentJSON {
 		if v.ChatId == id {
 			shouldWrite = false
 		}
 	}
 	if shouldWrite {
-		d = append(d, User{
+		currentJSON = append(currentJSON, User{
 			ChatId: id,
 		})
-		file, _ := json.MarshalIndent(d, "", " ")
-		_ = ioutil.WriteFile("database.json", file, 0644)
+		file, _ := json.MarshalIndent(currentJSON, "", " ")
+		err := ioutil.WriteFile("database.json", file, 0644)
+		log.Errorf("Write json failed %v", err)
 	}
 
 }
 
 func remove(id int64) {
-	log.Infof("Delete subscriber %d", id)
-	d := readJSON()
+	log.Infof("Delete subscriber %currentJSON", id)
+	currentJSON := readJSON()
 
-	var db []User
+	var this []User
 	var shouldWrite = false
 
-	for index, v := range d {
+	for index, v := range currentJSON {
 		if v.ChatId == id {
 			shouldWrite = true
-			db = removeElement(d, index)
+			this = removeElement(currentJSON, index)
 		}
 	}
 	if shouldWrite {
-		file, _ := json.MarshalIndent(db, "", "\t")
-		_ = ioutil.WriteFile("database.json", file, 0644)
+		file, _ := json.MarshalIndent(this, "", "\t")
+		err := ioutil.WriteFile("database.json", file, 0644)
+		log.Errorf("Write json failed %v", err)
 	}
 
 }
