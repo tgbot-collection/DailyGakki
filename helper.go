@@ -67,6 +67,7 @@ func remove(id int64) {
 	}
 	if shouldWrite {
 		file, _ := json.MarshalIndent(this, "", "\t")
+		log.Infoln("Record json %v", currentJSON)
 		err := ioutil.WriteFile("database.json", file, 0644)
 		if err != nil {
 			log.Errorf("Write json failed %v", err)
