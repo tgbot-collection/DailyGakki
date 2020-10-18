@@ -12,6 +12,7 @@ start - ガッキー
 settings - 设置
 subscribe - 订阅图片推送
 unsubscribe - 取消图片推送
+status - 查看订阅状态
 ```
 
 ~/go/bin/go-bindata  -o assets.go images/...

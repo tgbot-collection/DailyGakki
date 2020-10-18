@@ -191,6 +191,23 @@ func pingHandler(m *tb.Message) {
 	_, _ = b.Send(m.Chat, "pong")
 }
 
+func statusHandler(m *tb.Message) {
+	_ = b.Notify(m.Chat, tb.Typing)
+	currentJSON := readJSON()
+	var isSub = false
+	for _, user := range currentJSON {
+		if user.ChatId == m.Chat.ID {
+			isSub = true
+		}
+	}
+	if isSub {
+		_, _ = b.Send(m.Chat, "Gakki与你同在😄")
+	} else {
+		_, _ = b.Send(m.Chat, "还木有每日Gakki💔")
+
+	}
+}
+
 func checkSubscribePermission(m *tb.Message) (allow bool) {
 	allow = false
 	if !m.Private() {

@@ -59,6 +59,7 @@ By %s %s
 	b.Handle("/settings", settingsHandler)
 	b.Handle("/subscribe", subHandler)
 	b.Handle("/unsubscribe", unsubHandler)
+	b.Handle("/status", statusHandler)
 
 	b.Handle(tb.OnText, messageHandler)
 	b.Handle("/ping", pingHandler)
