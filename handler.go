@@ -10,6 +10,7 @@ import (
 	log "github.com/sirupsen/logrus"
 	tb "gopkg.in/tucnak/telebot.v2"
 	"path/filepath"
+	"strconv"
 )
 
 func startHandler(m *tb.Message) {
@@ -221,4 +222,33 @@ func checkSubscribePermission(m *tb.Message) (allow bool) {
 		allow = true
 	}
 	return
+}
+
+func photoHandler(m *tb.Message) {
+	userID, _ := strconv.Atoi(reviewer)
+	mm := tb.Message{
+		Sender: &tb.User{
+			ID: userID,
+		},
+	}
+
+	var btns []tb.Btn
+	var selector = &tb.ReplyMarkup{}
+
+	Approve := selector.Data("Yes", m.Photo.UniqueID, m.Photo.UniqueID)
+	Deny := selector.Data("No", m.Photo.UniqueID, m.Photo.UniqueID)
+
+	//registerButtonNextStep(Approve, "addServiceButton")
+	btns = append(btns, Approve, Deny)
+
+	selector.Inline(
+		selector.Row(btns...),
+	)
+
+	fwd, _ := b.Forward(mm.Sender, m, selector)
+	_, _ = b.Reply(fwd, "请Review", selector)
+
+	_ = b.Notify(m.Chat, tb.Typing)
+	_, _ = b.Reply(m, "你的Review已经发出去惹……请耐心等待😄")
+
 }

@@ -9,6 +9,7 @@ import "os"
 var album = "https://album.app.goo.gl/2aLeoBiRypWRR8yY9"
 var photos = os.Getenv("PHOTOS")
 var token = os.Getenv("TOKEN")
+var reviewer = os.Getenv("REVIEWER")
 
 type User struct {
 	ChatId int64 `json:"chat_id"`
