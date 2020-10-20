@@ -29,5 +29,10 @@ status - 查看订阅状态
 
 ![](assets/2.png)
 
+# Plan
+- [ ] Dockerfile
+- [ ] 用户投稿和review
+- [ ] 设置
+
 # License
 Apache License Version 2.0
