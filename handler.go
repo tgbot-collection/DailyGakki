@@ -258,7 +258,8 @@ func photoHandler(m *tb.Message) {
 
 	fwd, err := b.Forward(mm.Sender, m, selector)
 	if err != nil {
-		_, _ = b.Edit(botSent, "呃……由于网络原因，Review请求发送失败了，你再发一下试试")
+		log.Errorln(err)
+		_, _ = b.Edit(botSent, "呃……由于某种神秘的原因，Review请求发送失败了，你再发一下试试\n"+err.Error())
 	} else {
 		_, _ = b.Reply(fwd, "请Review", selector)
 
