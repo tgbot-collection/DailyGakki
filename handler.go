@@ -172,6 +172,9 @@ func messageHandler(m *tb.Message) {
 		filename = "lizard.gif"
 	default:
 		filename = "default.gif"
+		_, _ = b.Send(m.Chat, "🤪")
+		return
+
 	}
 
 	log.Infof("Choose %s for text %s", filename, m.Text)
