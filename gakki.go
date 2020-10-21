@@ -60,6 +60,7 @@ By %s %s
 	b.Handle("/subscribe", subHandler)
 	b.Handle("/unsubscribe", unsubHandler)
 	b.Handle("/status", statusHandler)
+	b.Handle("/submit", submitHandler)
 
 	b.Handle(tb.OnText, messageHandler)
 	b.Handle(tb.OnPhoto, photoHandler)

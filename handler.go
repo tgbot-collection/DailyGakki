@@ -254,8 +254,12 @@ func photoHandler(m *tb.Message) {
 	)
 
 	fwd, err := b.Forward(mm.Sender, m, selector)
-	fmt.Println(err)
-	_, _ = b.Reply(fwd, "请Review", selector)
+	if err != nil {
+		_, _ = b.Edit(botSent, "呃……由于网络原因，Review请求发送失败了，你再发一下试试")
+	} else {
+		_, _ = b.Reply(fwd, "请Review", selector)
+
+	}
 
 }
 
@@ -273,7 +277,11 @@ func approveButton(c *tb.Callback) {
 
 	_, _ = b.Edit(m, "你的图片被接受了😊")
 	photo := c.Message.ReplyTo.Photo
-	_ = b.Download(&photo.File, filepath.Join(photos, photo.UniqueID+".jpg"))
+	log.Infoln("Downloading photos...")
+	err = b.Download(&photo.File, filepath.Join(photos, photo.UniqueID+".jpg"))
+	if err != nil {
+		log.Errorln("Download failed", err)
+	}
 
 }
 
@@ -290,5 +298,13 @@ func denyButton(c *tb.Callback) {
 	}
 
 	_, _ = b.Edit(m, "你的图片被拒绝了😫")
+
+}
+
+func submitHandler(m *tb.Message) {
+
+	_ = b.Notify(m.Chat, tb.Typing)
+	_, _ = b.Send(m.Chat, "想要向我提交新的图片吗？直接把图片发送给我就可以！单张，多张为一组，转发都可以的！\n"+
+		"目前暂时还不支持以文件的形式发送。如有问题可以联系 @BennyThink")
 
 }
