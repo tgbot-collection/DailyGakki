@@ -11,6 +11,7 @@ import (
 	tb "gopkg.in/tucnak/telebot.v2"
 	"path/filepath"
 	"strconv"
+	"strings"
 )
 
 func startHandler(m *tb.Message) {
@@ -83,10 +84,10 @@ func settingsHandler(m *tb.Message) {
 
 }
 
-//func registerButtonNextStep(btn tb.Btn, fun func(c *tb.Callback)) {
-//	log.Infoln("Registering ", btn.Unique)
-//	b.Handle(&btn, fun)
-//}
+func registerButtonNextStep(btn tb.Btn, fun func(c *tb.Callback)) {
+	log.Infoln("Registering ", btn.Unique)
+	b.Handle(&btn, fun)
+}
 
 func subHandler(m *tb.Message) {
 	// check permission first
@@ -232,23 +233,62 @@ func photoHandler(m *tb.Message) {
 		},
 	}
 
+	_ = b.Notify(m.Chat, tb.Typing)
+	botSent, _ := b.Reply(m, "你的Review已经发出去惹……请耐心等待😄")
+
 	var btns []tb.Btn
 	var selector = &tb.ReplyMarkup{}
+	// text, unique string, data
+	p1, p2 := botSent.MessageSig()
+	data := fmt.Sprintf("%v|%v", p1, p2)
 
-	Approve := selector.Data("Yes", m.Photo.UniqueID, m.Photo.UniqueID)
-	Deny := selector.Data("No", m.Photo.UniqueID, m.Photo.UniqueID)
+	approve := selector.Data("Yes", fmt.Sprintf("Yes%v", m.Photo.UniqueID), data)
+	deny := selector.Data("No", fmt.Sprintf("No%v", m.Photo.UniqueID), data)
 
-	//registerButtonNextStep(Approve, "addServiceButton")
-	btns = append(btns, Approve, Deny)
+	registerButtonNextStep(approve, approveButton)
+	registerButtonNextStep(deny, denyButton)
+	btns = append(btns, approve, deny)
 
 	selector.Inline(
 		selector.Row(btns...),
 	)
 
-	fwd, _ := b.Forward(mm.Sender, m, selector)
+	fwd, err := b.Forward(mm.Sender, m, selector)
+	fmt.Println(err)
 	_, _ = b.Reply(fwd, "请Review", selector)
 
-	_ = b.Notify(m.Chat, tb.Typing)
-	_, _ = b.Reply(m, "你的Review已经发出去惹……请耐心等待😄")
+}
+
+func approveButton(c *tb.Callback) {
+	_ = b.Respond(c, &tb.CallbackResponse{Text: "Approved"})
+	_ = b.Delete(c.Message)
+	_ = b.Delete(c.Message.ReplyTo)
+
+	s := strings.Split(c.Data, "|")
+	cid, _ := strconv.ParseInt(s[1], 10, 64)
+	m := tb.StoredMessage{
+		MessageID: s[0],
+		ChatID:    cid,
+	}
+
+	_, _ = b.Edit(m, "你的图片被接受了😊")
+	photo := c.Message.ReplyTo.Photo
+	_ = b.Download(&photo.File, filepath.Join(photos, photo.UniqueID+".jpg"))
+
+}
+
+func denyButton(c *tb.Callback) {
+	_ = b.Respond(c, &tb.CallbackResponse{Text: "Denied"})
+	_ = b.Delete(c.Message)
+	_ = b.Delete(c.Message.ReplyTo)
+
+	s := strings.Split(c.Data, "|")
+	cid, _ := strconv.ParseInt(s[1], 10, 64)
+	m := tb.StoredMessage{
+		MessageID: s[0],
+		ChatID:    cid,
+	}
+
+	_, _ = b.Edit(m, "你的图片被拒绝了😫")
 
 }
