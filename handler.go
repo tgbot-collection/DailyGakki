@@ -281,8 +281,9 @@ func approveButton(c *tb.Callback) {
 
 	_, _ = b.Edit(m, "你的图片被接受了😊")
 	photo := c.Message.ReplyTo.Photo
-	log.Infoln("Downloading photos...")
-	err = b.Download(&photo.File, filepath.Join(photos, photo.UniqueID+".jpg"))
+	picPath := filepath.Join(photos, photo.UniqueID+".jpg")
+	log.Infof("Downloading photos to %s", picPath)
+	err = b.Download(&photo.File, picPath)
 	if err != nil {
 		log.Errorln("Download failed", err)
 	}

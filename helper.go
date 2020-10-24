@@ -106,6 +106,7 @@ func ChoosePhotos(count int) (paths []string) {
 		delete(photoMap, index)
 	}
 
+	log.Infof("Photo: %v", paths)
 	return
 }
 

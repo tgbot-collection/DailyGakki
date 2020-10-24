@@ -25,6 +25,13 @@ submit - 提交图片
 
 可以了！
 
+# docker
+```shell script
+docker run -d --restart=always -e TOKEN="FXI" -e PHOTOS="/photos/"  -e REVIEWER="123" \
+-v local/photo/path/:/photos -v database.json:/database.json
+bennythink/dailygakki
+```
+
 # 使用截图
 ![](assets/1.png)
 
