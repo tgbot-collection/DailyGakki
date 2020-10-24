@@ -9,6 +9,12 @@ default:
 	@echo "Build current platform executable..."
 	go build -o DailyGakki .
 
+static:
+	@echo "Installing dependencies..."
+	@go get -u github.com/go-bindata/go-bindata/...
+	@echo "Build static files..."
+	make asset
+	CGO_ENABLED=0 go build -a -ldflags '-extldflags "-static"' -o Gakki .
 
 all:
 	git pull
@@ -32,4 +38,5 @@ dev:
 clean:
 	@rm -rf builds
 	@rm -f assets.go
-
+	@rm -f Gakki
+	@rm -f DailyGakki
