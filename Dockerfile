@@ -1,15 +1,18 @@
 FROM golang:alpine as builder
 
 ENV HOME=/
-RUN apk update && apk add git make ca-certificates && \
+RUN apk update && apk add git make ca-certificates tzdata && \
 git clone https://github.com/tgbot-collection/DailyGakki /build && \
 cd /build && make static
 
 
 FROM scratch
 
+ENV TZ=Asia/Shanghai
+
 COPY --from=builder /build/Gakki /Gakki
 COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
+COPY --from=builder /usr/share/zoneinfo /usr/share/zoneinfo
 WORKDIR /
 
 ENTRYPOINT ["/Gakki"]

@@ -193,7 +193,7 @@ func messageHandler(m *tb.Message) {
 
 func pingHandler(m *tb.Message) {
 	_ = b.Notify(m.Chat, tb.Typing)
-	_, _ = b.Send(m.Chat, "pong")
+	_, _ = b.Send(m.Chat, getRuntime(), &tb.SendOptions{ParseMode: tb.ModeHTML})
 }
 
 func statusHandler(m *tb.Message) {
@@ -209,7 +209,6 @@ func statusHandler(m *tb.Message) {
 		_, _ = b.Send(m.Chat, "Gakki与你同在😄")
 	} else {
 		_, _ = b.Send(m.Chat, "还木有每日Gakki💔")
-
 	}
 }
 
