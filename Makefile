@@ -14,7 +14,7 @@ static:
 	@go get -u github.com/go-bindata/go-bindata/...
 	@echo "Build static files..."
 	make asset
-	CGO_ENABLED=0 go build -a -ldflags '-extldflags "-static"' -o Gakki .
+	CGO_ENABLED=0 go build -a -ldflags '-s -w -extldflags "-static"' -o Gakki .
 
 all:
 	git pull
