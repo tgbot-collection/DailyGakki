@@ -14,6 +14,8 @@ import (
 	"strings"
 )
 
+import "github.com/tgbot-collection/tgbot_ping"
+
 func startHandler(m *tb.Message) {
 	caption := "欢迎来到每日最可爱的Gakki！\n我会每天定是为你发送最可爱的Gakki！"
 	filename := "start.gif"
@@ -172,9 +174,7 @@ func messageHandler(m *tb.Message) {
 		filename = "lizard.gif"
 	default:
 		filename = "default.gif"
-		_, _ = b.Send(m.Chat, "🤪")
 		return
-
 	}
 
 	log.Infof("Choose %s for text %s", filename, m.Text)
@@ -193,7 +193,8 @@ func messageHandler(m *tb.Message) {
 
 func pingHandler(m *tb.Message) {
 	_ = b.Notify(m.Chat, tb.Typing)
-	_, _ = b.Send(m.Chat, getRuntime(), &tb.SendOptions{ParseMode: tb.ModeHTML})
+	info := tgbot_ping.GetRuntime("botsrunner_gakki_1", "Gakki Bot", "html")
+	_, _ = b.Send(m.Chat, info, &tb.SendOptions{ParseMode: tb.ModeHTML})
 }
 
 func statusHandler(m *tb.Message) {
