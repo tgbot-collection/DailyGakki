@@ -36,7 +36,7 @@ func startHandler(m *tb.Message) {
 func aboutHandler(m *tb.Message) {
 	caption := "欢迎来到每日最可爱的Gakki！\n" +
 		"开发者：@BennyThink\n" +
-		"GitHub: https://github.com/BennyThink/DailyGakki/" +
+		"GitHub: https://github.com/tgbot-collection/DailyGakki \n" +
 		"Google Photos 地址：" + album
 	filename := "about.gif"
 
