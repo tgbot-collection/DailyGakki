@@ -86,10 +86,10 @@ func settingsHandler(m *tb.Message) {
 
 }
 
-func registerButtonNextStep(btn tb.Btn, fun func(c *tb.Callback)) {
-	log.Infoln("Registering ", btn.Unique)
-	b.Handle(&btn, fun)
-}
+//func registerButtonNextStep(btn tb.Btn, fun func(c *tb.Callback)) {
+//	log.Infoln("Registering ", btn.Unique)
+//	b.Handle(&btn, fun)
+//}
 
 func subHandler(m *tb.Message) {
 	// check permission first
@@ -241,15 +241,11 @@ func photoHandler(m *tb.Message) {
 
 	var btns []tb.Btn
 	var selector = &tb.ReplyMarkup{}
-	// text, unique string, data
 	p1, p2 := botSent.MessageSig()
 	data := fmt.Sprintf("%v|%v", p1, p2)
+	approve := selector.Data("Yes", "Yes", data)
+	deny := selector.Data("No", "No", data)
 
-	approve := selector.Data("Yes", fmt.Sprintf("Yes%v", m.Photo.UniqueID), data)
-	deny := selector.Data("No", fmt.Sprintf("No%v", m.Photo.UniqueID), data)
-
-	registerButtonNextStep(approve, approveButton)
-	registerButtonNextStep(deny, denyButton)
 	btns = append(btns, approve, deny)
 
 	selector.Inline(
@@ -267,42 +263,38 @@ func photoHandler(m *tb.Message) {
 
 }
 
-func approveButton(c *tb.Callback) {
-	_ = b.Respond(c, &tb.CallbackResponse{Text: "Approved"})
-	_ = b.Delete(c.Message)
-	_ = b.Delete(c.Message.ReplyTo)
+func callbackEntrance(c *tb.Callback) {
+	// this callback interacts with requester
+	//\fYes|4853|123133
+	splits := strings.Split(c.Data, "|")
+	action, mid := splits[0], splits[1]
+	cid, _ := strconv.ParseInt(splits[2], 10, 64)
 
-	s := strings.Split(c.Data, "|")
-	cid, _ := strconv.ParseInt(s[1], 10, 64)
-	m := tb.StoredMessage{
-		MessageID: s[0],
-		ChatID:    cid,
+	botM := tb.StoredMessage{MessageID: mid, ChatID: cid}
+
+	if action == "\fYes" {
+		_ = b.Respond(c, &tb.CallbackResponse{Text: "Approved"})
+		approveAction(c.Message.ReplyTo)
+		_, _ = b.Edit(botM, "你的图片被接受了😊")
+
+	} else if action == "\fNo" {
+		_ = b.Respond(c, &tb.CallbackResponse{Text: "Denied"})
+		_, _ = b.Edit(botM, "你的图片被拒绝了😫")
 	}
 
-	_, _ = b.Edit(m, "你的图片被接受了😊")
-	photo := c.Message.ReplyTo.Photo
+	_ = b.Delete(c.Message)         // this message
+	_ = b.Delete(c.Message.ReplyTo) // original message with photo
+}
+
+func approveAction(photoMessage *tb.Message) {
+	// this handler interacts with reviewer
+	photo := photoMessage.Photo
 	picPath := filepath.Join(photos, photo.UniqueID+".jpg")
 	log.Infof("Downloading photos to %s", picPath)
 	err = b.Download(&photo.File, picPath)
 	if err != nil {
 		log.Errorln("Download failed", err)
 	}
-
-}
-
-func denyButton(c *tb.Callback) {
-	_ = b.Respond(c, &tb.CallbackResponse{Text: "Denied"})
-	_ = b.Delete(c.Message)
-	_ = b.Delete(c.Message.ReplyTo)
-
-	s := strings.Split(c.Data, "|")
-	cid, _ := strconv.ParseInt(s[1], 10, 64)
-	m := tb.StoredMessage{
-		MessageID: s[0],
-		ChatID:    cid,
-	}
-
-	_, _ = b.Edit(m, "你的图片被拒绝了😫")
 
 }
 

@@ -64,6 +64,7 @@ By %s %s
 
 	b.Handle(tb.OnText, messageHandler)
 	b.Handle(tb.OnPhoto, photoHandler)
+	b.Handle(tb.OnCallback, callbackEntrance)
 	b.Handle("/ping", pingHandler)
 
 	log.Infoln("I'm running...")
