@@ -86,6 +86,16 @@ func settingsHandler(m *tb.Message) {
 
 }
 
+func channelHandler(m *tb.Message) {
+	if m.Text == "/subscribe" {
+		subHandler(m)
+	} else if m.Text == "/unsubscribe" {
+		unsubHandler(m)
+	} else {
+		log.Infof("Oops. %s is not a command. Ignore it.", m.Text)
+	}
+}
+
 func subHandler(m *tb.Message) {
 	// check permission first
 	canSubscribe := checkSubscribePermission(m)
@@ -145,6 +155,7 @@ func unsubHandler(m *tb.Message) {
 }
 
 func messageHandler(m *tb.Message) {
+	fmt.Println(1111)
 	caption := "私は　今でも空と恋をしています。"
 	var filename string
 
@@ -210,15 +221,17 @@ func statusHandler(m *tb.Message) {
 
 func checkSubscribePermission(m *tb.Message) (allow bool) {
 	allow = false
-	if !m.Private() {
+	// private and channel: allow
+	// group: check admin
+	if m.Private() || m.Chat.Type == "channel" {
+		allow = true
+	} else {
 		admins, _ := b.AdminsOf(m.Chat)
 		for _, admin := range admins {
 			if admin.User.ID == m.Sender.ID {
 				allow = true
 			}
 		}
-	} else {
-		allow = true
 	}
 	return
 }

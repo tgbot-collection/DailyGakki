@@ -63,6 +63,7 @@ By %s %s
 	b.Handle("/submit", submitHandler)
 	b.Handle("/ping", pingHandler)
 
+	b.Handle(tb.OnChannelPost, channelHandler)
 	b.Handle(tb.OnText, messageHandler)
 	b.Handle(tb.OnPhoto, photoHandler)
 	b.Handle(tb.OnCallback, callbackEntrance)
