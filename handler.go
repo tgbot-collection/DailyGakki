@@ -86,11 +86,6 @@ func settingsHandler(m *tb.Message) {
 
 }
 
-//func registerButtonNextStep(btn tb.Btn, fun func(c *tb.Callback)) {
-//	log.Infoln("Registering ", btn.Unique)
-//	b.Handle(&btn, fun)
-//}
-
 func subHandler(m *tb.Message) {
 	// check permission first
 	canSubscribe := checkSubscribePermission(m)
@@ -229,6 +224,9 @@ func checkSubscribePermission(m *tb.Message) (allow bool) {
 }
 
 func photoHandler(m *tb.Message) {
+	if !m.Private() {
+		return
+	}
 	userID, _ := strconv.Atoi(reviewer)
 	mm := tb.Message{
 		Sender: &tb.User{
@@ -304,4 +302,33 @@ func submitHandler(m *tb.Message) {
 	_, _ = b.Send(m.Chat, "想要向我提交新的图片吗？直接把图片发送给我就可以！单张，多张为一组，转发都可以的！\n"+
 		"目前暂时还不支持以文件的形式发送。如有问题可以联系 @BennyThink")
 
+}
+
+func inline(q *tb.Query) {
+	var urls []string
+	var web = "https://bot.gakki.photos/photos/"
+
+	for _, p := range ChoosePhotos(3) {
+		urls = append(urls, web+filepath.Base(p))
+	}
+
+	results := make(tb.Results, len(urls)) // []tb.Result
+	for i, url := range urls {
+		results[i] = &tb.PhotoResult{
+			URL:      url,
+			ThumbURL: url,
+		}
+		// needed to set a unique string ID for each result
+		results[i].SetResultID(strconv.Itoa(i))
+	}
+
+	log.Infof("Inline pic %v", urls)
+	err := b.Answer(q, &tb.QueryResponse{
+		Results:   results,
+		CacheTime: 60, // a minute
+	})
+
+	if err != nil {
+		log.Println(err)
+	}
 }

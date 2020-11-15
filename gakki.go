@@ -61,11 +61,12 @@ By %s %s
 	b.Handle("/unsubscribe", unsubHandler)
 	b.Handle("/status", statusHandler)
 	b.Handle("/submit", submitHandler)
+	b.Handle("/ping", pingHandler)
 
 	b.Handle(tb.OnText, messageHandler)
 	b.Handle(tb.OnPhoto, photoHandler)
 	b.Handle(tb.OnCallback, callbackEntrance)
-	b.Handle("/ping", pingHandler)
+	b.Handle(tb.OnQuery, inline)
 
 	log.Infoln("I'm running...")
 	b.Start()

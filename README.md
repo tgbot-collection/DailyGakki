@@ -35,9 +35,15 @@ bennythink/dailygakki
 ```
 
 # 使用截图
+## 聊天
 ![](assets/1.png)
 
 ![](assets/2.png)
+
+## inline模式
+在任意聊天框中，输入 `@my_gakki_bot` 即可！
+![](assets/inline.jpg)
+
 
 # Plan
 - [x] Dockerfile
