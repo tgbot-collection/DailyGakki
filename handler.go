@@ -319,7 +319,7 @@ func submitHandler(m *tb.Message) {
 
 func inline(q *tb.Query) {
 	var urls []string
-	var web = "https://bot.gakki.photos/photos/"
+	var web = "https://bot.gakki.photos/"
 
 	for _, p := range ChoosePhotos(3) {
 		urls = append(urls, web+filepath.Base(p))
