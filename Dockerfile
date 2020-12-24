@@ -1,9 +1,11 @@
 FROM golang:alpine as builder
 
 ENV HOME=/
-RUN apk update && apk add git make ca-certificates tzdata && \
-git clone https://github.com/tgbot-collection/DailyGakki /build && \
-cd /build && make static
+RUN apk update && apk add --no-cache make ca-certificates tzdata && mkdir /build
+COPY go.mod /build
+RUN cd /build && go mod download
+COPY . /build
+RUN cd /build &&make static
 
 
 FROM scratch
