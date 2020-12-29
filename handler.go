@@ -297,16 +297,28 @@ func callbackEntrance(c *tb.Callback) {
 	_ = b.Delete(c.Message.ReplyTo) // original message with photo
 }
 
-func approveAction(photoMessage *tb.Message) {
+func approveAction(reviewMessage *tb.Message) {
 	// this handler interacts with reviewer
-	photo := photoMessage.Photo
-	picPath := filepath.Join(photos, photo.UniqueID+".jpg")
+	photo := reviewMessage.Photo
+	document := reviewMessage.Document
+	var filename = ""
+	var fileobject tb.File
+
+	if photo != nil {
+		filename = photo.UniqueID + ".jpg"
+		fileobject = photo.File
+	} else if document != nil {
+		filename = document.UniqueID + ".jpg"
+		fileobject = document.File
+	} else {
+		return
+	}
+	picPath := filepath.Join(photosPath, filename)
 	log.Infof("Downloading photos to %s", picPath)
-	err = b.Download(&photo.File, picPath)
+	err = b.Download(&fileobject, picPath)
 	if err != nil {
 		log.Errorln("Download failed", err)
 	}
-
 }
 
 func submitHandler(m *tb.Message) {
@@ -319,7 +331,7 @@ func submitHandler(m *tb.Message) {
 
 func inline(q *tb.Query) {
 	var urls []string
-	var web = "https://bot.gakki.photos/"
+	var web = "https://bot.gakki.photosPath/"
 
 	for _, p := range ChoosePhotos(3) {
 		urls = append(urls, web+filepath.Base(p))

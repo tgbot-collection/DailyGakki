@@ -44,6 +44,9 @@ bennythink/dailygakki
 在任意聊天框中，输入 `@my_gakki_bot` 即可！
 ![](assets/inline.jpg)
 
+## 提交图片
+直接发送（转发）图片/文件给机器人即可！
+![](assets/review.png)
 
 # Plan
 - [x] Dockerfile

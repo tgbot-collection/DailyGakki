@@ -98,7 +98,7 @@ func listAll(path string) (photo map[int]string) {
 
 func ChoosePhotos(count int) (paths []string) {
 	log.Infof("Choose %d photo(s)", count)
-	photoMap := listAll(photos)
+	photoMap := listAll(photosPath)
 	rand.Seed(time.Now().Unix())
 	for i := 1; i <= count; i++ {
 		index := rand.Intn(len(photoMap))
