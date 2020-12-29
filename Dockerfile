@@ -5,7 +5,7 @@ RUN apk update && apk add --no-cache make ca-certificates tzdata && mkdir /build
 COPY go.mod /build
 RUN cd /build && go mod download
 COPY . /build
-RUN cd /build &&make static
+RUN cd /build && make static
 
 
 FROM scratch

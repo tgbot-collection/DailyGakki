@@ -7,7 +7,7 @@ package main
 import "os"
 
 var album = "https://photos.app.goo.gl/2aLeoBiRypWRR8yY9"
-var photos = os.Getenv("PHOTOS")
+var photosPath = os.Getenv("PHOTOS")
 var token = os.Getenv("TOKEN")
 var reviewer = os.Getenv("REVIEWER")
 
