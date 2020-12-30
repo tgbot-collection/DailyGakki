@@ -325,13 +325,13 @@ func submitHandler(m *tb.Message) {
 
 	_ = b.Notify(m.Chat, tb.Typing)
 	_, _ = b.Send(m.Chat, "想要向我提交新的图片吗？直接把图片发送给我就可以！单张，多张为一组，转发都可以的！\n"+
-		"目前暂时还不支持以文件的形式发送。如有问题可以联系 @BennyThink")
+		"文件和图片的形式发送给bot都可以哦。如有问题可以联系 @BennyThink")
 
 }
 
 func inline(q *tb.Query) {
 	var urls []string
-	var web = "https://bot.gakki.photosPath/"
+	var web = "https://bot.gakki.photos/"
 
 	for _, p := range ChoosePhotos(3) {
 		urls = append(urls, web+filepath.Base(p))
