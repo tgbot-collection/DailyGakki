@@ -50,7 +50,7 @@ func addMorePush(id int64, time string) (respond, message string) {
 	currentPush := currentJSON[id].Time
 	result := isContain(currentPush, time)
 	if result {
-		return "你好奇怪哦", "这个时间已经有了哦，小盆友你又调皮了呢😝"
+		return "设置失败", "这个时间已经有了哦，小盆友你又调皮了呢😝"
 	}
 
 	currentPush = append(currentPush, time)
