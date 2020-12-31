@@ -68,21 +68,59 @@ func settingsHandler(m *tb.Message) {
 	log.Infof("Settings command: %d", m.Chat.ID)
 
 	_ = b.Notify(m.Chat, tb.Typing)
-	_, _ = b.Send(m.Chat, "在这里可以设置每日推送时间和每日推送次数")
+	// send out push time
 	var btns []tb.Btn
 	var selector = &tb.ReplyMarkup{}
-
-	btn := selector.Data("Placeholder", fmt.Sprintf("Placeholder%s%d",
-		"Placeholder", m.Chat.ID), "Placeholder")
-	//registerButtonNextStep(btn, "addServiceButton")
-	btns = append(btns, btn)
-
+	add := selector.Data("增加推送时间", "AddPush")
+	modify := selector.Data("修改推送时间", "ModifyPush")
+	btns = append(btns, add, modify)
 	selector.Inline(
 		selector.Row(btns...),
 	)
 
 	_ = b.Notify(m.Chat, tb.Typing)
-	_, _ = b.Send(m.Chat, "呀！这部分功能还没做！😅", selector)
+	pushTimeStr := strings.Join(getPushTime(m.Chat.ID), " ")
+	if pushTimeStr == "" {
+		message := fmt.Sprintf("哼假粉😕，都没有 /subscribe 还想看！")
+		_, _ = b.Send(m.Chat, message)
+	} else {
+		message := fmt.Sprintf("你目前的推送时间有：%s，你想要增加还是删除？", pushTimeStr)
+		_, _ = b.Send(m.Chat, message, selector)
+	}
+
+	///////
+
+	//var inlineKeys [][]tb.InlineButton
+	//
+	//var unique []tb.InlineButton
+	//unique = append(unique, tb.InlineButton{
+	//	Unique: fmt.Sprintf("SubTime%s", "18:11"),
+	//	Text:   "18:11",
+	//})
+	//inlineKeys = append(inlineKeys, unique)
+	//
+	//var btns []tb.InlineButton
+	//var count = 1
+	//for _, t := range timeSeries() {
+	//	if count <= 5 {
+	//		var temp = tb.InlineButton{
+	//			Unique: fmt.Sprintf("SubTime%s", t),
+	//			Text:   t,
+	//		}
+	//		btns = append(btns, temp)
+	//		count++
+	//	} else {
+	//		count = 1
+	//		inlineKeys = append(inlineKeys, btns)
+	//		btns =[]tb.InlineButton{}
+	//	}
+	//}
+	//
+	//_, _ = b.Send(m.Sender, "好的，那你选个时间吧！", &tb.ReplyMarkup{
+	//	InlineKeyboard: inlineKeys,
+	//})
+
+	//////
 
 }
 
@@ -106,7 +144,7 @@ func subHandler(m *tb.Message) {
 		return
 	}
 
-	caption := "已经订阅成功啦！将在每晚18:11准时为你推送最可爱的Gakki！"
+	caption := "已经订阅成功啦！将在每晚18:11准时为你推送最可爱的Gakki！如有需要可在 /settings 中更改时间和频率"
 	filename := "sub.gif"
 
 	log.Infof("Sub command: %d", m.Chat.ID)
@@ -120,7 +158,7 @@ func subHandler(m *tb.Message) {
 		log.Warnf("%s send failed %v", filename, err)
 	}
 
-	add(m.Chat.ID)
+	addInitSub(m.Chat.ID)
 
 }
 
@@ -155,7 +193,6 @@ func unsubHandler(m *tb.Message) {
 }
 
 func messageHandler(m *tb.Message) {
-	fmt.Println(1111)
 	caption := "私は　今でも空と恋をしています。"
 	var filename string
 

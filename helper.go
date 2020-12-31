@@ -15,32 +15,29 @@ import (
 	"time"
 )
 
-func readJSON() []User {
+func readJSON() user {
 	log.Infoln("Read json file...")
 	jsonFile, _ := os.Open("database.json")
 	decoder := json.NewDecoder(jsonFile)
 
-	var db []User
-	err = decoder.Decode(&db)
+	var config user
+	err = decoder.Decode(&config)
 	_ = jsonFile.Close()
-	return db
-
+	return config
 }
 
-func add(id int64) {
+func addInitSub(id int64) {
 	log.Infof("Add subscriber %v", id)
 	currentJSON := readJSON()
-	// check and then add
-	var shouldWrite = true
-	for _, v := range currentJSON {
-		if v.ChatId == id {
-			shouldWrite = false
-		}
-	}
-	if shouldWrite {
-		currentJSON = append(currentJSON, User{
+
+	// check if current user has already subscribed
+	if _, ok := currentJSON[id]; !ok {
+		// create user object
+		currentJSON[id] = userConfig{
 			ChatId: id,
-		})
+			Time:   []string{"18:11"},
+		}
+
 		file, _ := json.MarshalIndent(currentJSON, "", "\t")
 		log.Infoln("Record json %v", currentJSON)
 
@@ -48,37 +45,23 @@ func add(id int64) {
 		if err != nil {
 			log.Errorf("Write json failed %v", err)
 		}
-	}
 
+	}
 }
 
 func remove(id int64) {
+	// delete all
 	log.Infof("Delete subscriber %v", id)
 	currentJSON := readJSON()
+	delete(currentJSON, id)
 
-	var this []User
-	var shouldWrite = false
-
-	for index, v := range currentJSON {
-		if v.ChatId == id {
-			shouldWrite = true
-			this = removeElement(currentJSON, index)
-		}
-	}
-	if shouldWrite {
-		file, _ := json.MarshalIndent(this, "", "\t")
-		log.Infoln("Record json %v", currentJSON)
-		err := ioutil.WriteFile("database.json", file, 0644)
-		if err != nil {
-			log.Errorf("Write json failed %v", err)
-		}
+	file, _ := json.MarshalIndent(currentJSON, "", "\t")
+	log.Infoln("Record json %v", currentJSON)
+	err := ioutil.WriteFile("database.json", file, 0644)
+	if err != nil {
+		log.Errorf("Write json failed %v", err)
 	}
 
-}
-
-func removeElement(s []User, i int) []User {
-	s[len(s)-1], s[i] = s[i], s[len(s)-1]
-	return s[:len(s)-1]
 }
 
 func listAll(path string) (photo map[int]string) {
@@ -122,4 +105,18 @@ func generatePhotos() (sendAlbum tb.Album) {
 	p := &tb.Photo{File: tb.FromDisk(chosen[0]), Caption: "怎么样，喜欢今日份的Gakki吗🤩"}
 	sendAlbum = append(sendAlbum, p)
 	return
+}
+
+func timeSeries() (series []string) {
+	var base int64 = 581983200
+	for i := 0; i <= (22-7)*2; i++ {
+		base += 60 * 30
+		series = append(series, time.Unix(base, 0).Format("15:04"))
+	}
+	return series
+}
+
+func getPushTime(uid int64) []string {
+	var config = readJSON()
+	return config[uid].Time
 }
