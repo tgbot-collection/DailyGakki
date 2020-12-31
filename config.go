@@ -16,4 +16,4 @@ type userConfig struct {
 	Time   []string `json:"time"`
 }
 
-type user map[int64]userConfig
+type user map[int64]*userConfig

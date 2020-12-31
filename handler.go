@@ -88,40 +88,6 @@ func settingsHandler(m *tb.Message) {
 		_, _ = b.Send(m.Chat, message, selector)
 	}
 
-	///////
-
-	//var inlineKeys [][]tb.InlineButton
-	//
-	//var unique []tb.InlineButton
-	//unique = append(unique, tb.InlineButton{
-	//	Unique: fmt.Sprintf("SubTime%s", "18:11"),
-	//	Text:   "18:11",
-	//})
-	//inlineKeys = append(inlineKeys, unique)
-	//
-	//var btns []tb.InlineButton
-	//var count = 1
-	//for _, t := range timeSeries() {
-	//	if count <= 5 {
-	//		var temp = tb.InlineButton{
-	//			Unique: fmt.Sprintf("SubTime%s", t),
-	//			Text:   t,
-	//		}
-	//		btns = append(btns, temp)
-	//		count++
-	//	} else {
-	//		count = 1
-	//		inlineKeys = append(inlineKeys, btns)
-	//		btns =[]tb.InlineButton{}
-	//	}
-	//}
-	//
-	//_, _ = b.Send(m.Sender, "好的，那你选个时间吧！", &tb.ReplyMarkup{
-	//	InlineKeyboard: inlineKeys,
-	//})
-
-	//////
-
 }
 
 func channelHandler(m *tb.Message) {
@@ -312,15 +278,59 @@ func photoHandler(m *tb.Message) {
 }
 
 func callbackEntrance(c *tb.Callback) {
-	log.Infof("Initiating callback from %d", c.Sender.ID)
+	log.Infof("Initiating callback data %s from %d", c.Data, c.Sender.ID)
 	// this callback interacts with requester
 	switch {
 	case c.Data == "\fAddPush":
+		addPushInit(c)
 	case strings.HasPrefix(c.Data, "\fYes"):
 		approveCallback(c)
 	case strings.HasPrefix(c.Data, "\fNo"):
 		denyCallback(c)
+	case strings.HasPrefix(c.Data, "\fSubTime"):
+		addMore(c)
 	}
+}
+
+func addMore(c *tb.Callback) {
+	newtime := strings.Replace(c.Data, "\fSubTime", "", -1)
+	respond, message := addMorePush(int64(c.Sender.ID), newtime)
+	_ = b.Respond(c, &tb.CallbackResponse{Text: respond})
+	_, _ = b.Send(c.Sender, message)
+}
+
+func addPushInit(c *tb.Callback) {
+	// duplicate time, ignore here
+	var inlineKeys [][]tb.InlineButton
+
+	var unique []tb.InlineButton
+	unique = append(unique, tb.InlineButton{
+		Unique: fmt.Sprintf("SubTime%s", "18:11"),
+		Text:   "18:11",
+	})
+	inlineKeys = append(inlineKeys, unique)
+
+	var btns []tb.InlineButton
+	var count = 1
+	for _, t := range timeSeries() {
+		if count <= 5 {
+			var temp = tb.InlineButton{
+				Unique: fmt.Sprintf("SubTime%s", t),
+				Text:   t,
+			}
+			btns = append(btns, temp)
+			count++
+		} else {
+			count = 1
+			inlineKeys = append(inlineKeys, btns)
+			btns = []tb.InlineButton{}
+		}
+	}
+
+	_, _ = b.Send(c.Sender, "好的，那你选个时间吧！", &tb.ReplyMarkup{
+		InlineKeyboard: inlineKeys,
+	})
+
 }
 
 func getStoredMessage(data string) tb.StoredMessage {

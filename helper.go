@@ -12,6 +12,7 @@ import (
 	"math/rand"
 	"os"
 	"path/filepath"
+	"strings"
 	"time"
 )
 
@@ -33,20 +34,38 @@ func addInitSub(id int64) {
 	// check if current user has already subscribed
 	if _, ok := currentJSON[id]; !ok {
 		// create user object
-		currentJSON[id] = userConfig{
+		currentJSON[id] = &userConfig{
 			ChatId: id,
 			Time:   []string{"18:11"},
 		}
 
-		file, _ := json.MarshalIndent(currentJSON, "", "\t")
-		log.Infoln("Record json %v", currentJSON)
-
-		err := ioutil.WriteFile("database.json", file, 0644)
-		if err != nil {
-			log.Errorf("Write json failed %v", err)
-		}
-
+		saveJSON(currentJSON)
 	}
+}
+
+func addMorePush(id int64, time string) (respond, message string) {
+	log.Infof("Add more push for %d at %s", id, time)
+	currentJSON := readJSON()
+
+	currentPush := currentJSON[id].Time
+	result := isContain(currentPush, time)
+	if result {
+		return "你好奇怪哦", "这个时间已经有了哦，小盆友你又调皮了呢😝"
+	}
+
+	currentPush = append(currentPush, time)
+	currentJSON[id].Time = currentPush
+	saveJSON(currentJSON)
+	return "设置成功", "你现在的推送时间为 " + strings.Join(currentPush, " ")
+}
+
+func isContain(items []string, item string) bool {
+	for _, eachItem := range items {
+		if eachItem == item {
+			return true
+		}
+	}
+	return false
 }
 
 func remove(id int64) {
@@ -55,13 +74,17 @@ func remove(id int64) {
 	currentJSON := readJSON()
 	delete(currentJSON, id)
 
-	file, _ := json.MarshalIndent(currentJSON, "", "\t")
-	log.Infoln("Record json %v", currentJSON)
+	saveJSON(currentJSON)
+
+}
+
+func saveJSON(current user) {
+	file, _ := json.MarshalIndent(current, "", "\t")
+	log.Infoln("Record json %v", current)
 	err := ioutil.WriteFile("database.json", file, 0644)
 	if err != nil {
 		log.Errorf("Write json failed %v", err)
 	}
-
 }
 
 func listAll(path string) (photo map[int]string) {
