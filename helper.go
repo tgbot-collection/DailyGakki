@@ -59,6 +59,24 @@ func addMorePush(id int64, time string) (respond, message string) {
 	return "设置成功", "你现在的推送时间为 " + strings.Join(currentPush, " ")
 }
 
+func deleteOnePush(id int64, time string) {
+	log.Infof("delete push entry for %d at %s", id, time)
+	currentJSON := readJSON()
+
+	currentPush := currentJSON[id].Time
+	currentJSON[id].Time = removeElement(currentPush, time)
+	saveJSON(currentJSON)
+
+}
+func removeElement(full []string, s string) (ret []string) {
+	for _, v := range full {
+		if v != s {
+			ret = append(ret, v)
+		}
+	}
+	return
+}
+
 func isContain(items []string, item string) bool {
 	for _, eachItem := range items {
 		if eachItem == item {

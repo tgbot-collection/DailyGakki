@@ -289,7 +289,50 @@ func callbackEntrance(c *tb.Callback) {
 		denyCallback(c)
 	case strings.HasPrefix(c.Data, "\fSubTime"):
 		addMore(c)
+	case strings.HasPrefix(c.Data, "\fModifyPush"):
+		modifyPush(c)
+	case strings.HasPrefix(c.Data, "\fDeleteThisTime"):
+		deletepushentry(c)
+
 	}
+}
+
+func deletepushentry(c *tb.Callback) {
+	uid := c.Sender.ID
+	time := strings.Replace(c.Data, "\fDeleteThisTime", "", -1)
+	deleteOnePush(int64(uid), time)
+	_ = b.Respond(c, &tb.CallbackResponse{Text: "删除好了哦！"})
+
+	// edit
+	pushSeries := getPushTime(int64(c.Sender.ID))
+
+	var btns []tb.Btn
+	var selector = &tb.ReplyMarkup{}
+
+	for _, v := range pushSeries {
+		btns = append(btns, selector.Data(v, "DeleteThisTime"+v))
+	}
+	selector.Inline(
+		selector.Row(btns...),
+	)
+	_, _ = b.EditReplyMarkup(c.Message, selector)
+}
+
+func modifyPush(c *tb.Callback) {
+	pushSeries := getPushTime(int64(c.Sender.ID))
+
+	var btns []tb.Btn
+	var selector = &tb.ReplyMarkup{}
+
+	for _, v := range pushSeries {
+		btns = append(btns, selector.Data(v, "DeleteThisTime"+v))
+	}
+	selector.Inline(
+		selector.Row(btns...),
+	)
+
+	_ = b.Respond(c, &tb.CallbackResponse{Text: "点击按钮即可删除这个时间的推送"})
+	_, _ = b.Send(c.Sender, "选择要删除的时间", selector)
 }
 
 func addMore(c *tb.Callback) {
