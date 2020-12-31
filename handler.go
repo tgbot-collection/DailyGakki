@@ -312,23 +312,43 @@ func photoHandler(m *tb.Message) {
 }
 
 func callbackEntrance(c *tb.Callback) {
+	log.Infof("Initiating callback from %d", c.Sender.ID)
 	// this callback interacts with requester
-	//\fYes|4853|123133
-	splits := strings.Split(c.Data, "|")
-	action, mid := splits[0], splits[1]
-	cid, _ := strconv.ParseInt(splits[2], 10, 64)
-
-	botM := tb.StoredMessage{MessageID: mid, ChatID: cid}
-
-	if action == "\fYes" {
-		_ = b.Respond(c, &tb.CallbackResponse{Text: "Approved"})
-		approveAction(c.Message.ReplyTo)
-		_, _ = b.Edit(botM, "你的图片被接受了😊")
-
-	} else if action == "\fNo" {
-		_ = b.Respond(c, &tb.CallbackResponse{Text: "Denied"})
-		_, _ = b.Edit(botM, "你的图片被拒绝了😫")
+	switch {
+	case c.Data == "\fAddPush":
+	case strings.HasPrefix(c.Data, "\fYes"):
+		approveCallback(c)
+	case strings.HasPrefix(c.Data, "\fNo"):
+		denyCallback(c)
 	}
+}
+
+func getStoredMessage(data string) tb.StoredMessage {
+	// data Yes|5159|123456789
+	splits := strings.Split(data, "|")
+	cid, _ := strconv.ParseInt(splits[2], 10, 64)
+	botM := tb.StoredMessage{MessageID: splits[1], ChatID: cid}
+	return botM
+}
+
+func approveCallback(c *tb.Callback) {
+	log.Infof("approve new photos from %s", c.Data)
+	botM := getStoredMessage(c.Data)
+
+	approveAction(c.Message.ReplyTo)
+	_ = b.Respond(c, &tb.CallbackResponse{Text: "Approved"})
+	_, _ = b.Edit(botM, "你的图片被接受了😊")
+
+	_ = b.Delete(c.Message)         // this message
+	_ = b.Delete(c.Message.ReplyTo) // original message with photo
+}
+
+func denyCallback(c *tb.Callback) {
+	log.Infof("deny new photos from %s", c.Data)
+	botM := getStoredMessage(c.Data)
+
+	_ = b.Respond(c, &tb.CallbackResponse{Text: "Denied"})
+	_, _ = b.Edit(botM, "你的图片被拒绝了😫")
 
 	_ = b.Delete(c.Message)         // this message
 	_ = b.Delete(c.Message.ReplyTo) // original message with photo
