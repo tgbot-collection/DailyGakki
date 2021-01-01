@@ -24,7 +24,7 @@ func scheduler() {
 		}
 	}
 
-	log.Infof("Total count as of %s: %d", currentWindow, len(sendList))
+	log.Infof("Total count as of %s: %d", currentWindow, len(sendList[currentWindow]))
 
 	for _, v := range sendList[currentWindow] {
 		// v is user id
