@@ -26,5 +26,5 @@ for sub in old:
 print(json.dumps(converted, indent=4))
 
 if input("Are you sure you want to dump data? yes/no") == "yes":
-    with open("gakki2.json", "w")as f:
+    with open("gakki.json", "w")as f:
         json.dump(converted, f, ensure_ascii=False, indent=4)
