@@ -68,6 +68,7 @@ func settingsHandler(m *tb.Message) {
 	log.Infof("Settings command: %d", m.Chat.ID)
 
 	_ = b.Notify(m.Chat, tb.Typing)
+	log.Infoln("Preparing buttons...")
 	// send out push time
 	var btns []tb.Btn
 	var selector = &tb.ReplyMarkup{}
@@ -79,6 +80,7 @@ func settingsHandler(m *tb.Message) {
 	)
 
 	_ = b.Notify(m.Chat, tb.Typing)
+	log.Infoln("Retrieving push time...")
 	pushTimeStr := strings.Join(getPushTime(m.Chat.ID), " ")
 	if pushTimeStr == "" {
 		message := fmt.Sprintf("哼假粉😕，都没有 /subscribe 还想看！")
@@ -91,22 +93,22 @@ func settingsHandler(m *tb.Message) {
 }
 
 func channelHandler(m *tb.Message) {
-	if m.Text == "/subscribe" {
+	log.Infof("Channel message Handler: %d from %s", m.Chat.ID, m.Chat.Type)
+	switch m.Text {
+	case "/subscribe":
 		subHandler(m)
-	} else if m.Text == "/unsubscribe" {
+	case "/unsubscribe":
 		unsubHandler(m)
-	} else {
+	case "/settings":
+		settingsHandler(m)
+	default:
 		log.Infof("Oops. %s is not a command. Ignore it.", m.Text)
 	}
 }
 
 func subHandler(m *tb.Message) {
 	// check permission first
-	canSubscribe := checkSubscribePermission(m)
-	if !canSubscribe {
-		log.Infof("Denied subscribe request for: %d", m.Sender.ID)
-		_ = b.Notify(m.Chat, tb.Typing)
-		_, _ = b.Send(m.Chat, "ええ😉只有管理员才能进行设置哦")
+	if permissionCheck(m) {
 		return
 	}
 
@@ -128,14 +130,36 @@ func subHandler(m *tb.Message) {
 
 }
 
-func unsubHandler(m *tb.Message) {
-	canSubscribe := checkSubscribePermission(m)
+func permissionCheck(m *tb.Message) bool {
+	// private and channel: allow
+	// group: check admin
+	var canSubscribe = false
+	if m.Private() || m.Chat.Type == "channel" {
+		canSubscribe = true
+	} else {
+		admins, _ := b.AdminsOf(m.Chat)
+		for _, admin := range admins {
+			if admin.User.ID == m.Sender.ID {
+				canSubscribe = true
+			}
+		}
+	}
+
+	//
 	if !canSubscribe {
 		log.Infof("Denied subscribe request for: %d", m.Sender.ID)
 		_ = b.Notify(m.Chat, tb.Typing)
 		_, _ = b.Send(m.Chat, "ええ😉只有管理员才能进行设置哦")
+		return true
+	}
+	return false
+}
+
+func unsubHandler(m *tb.Message) {
+	if permissionCheck(m) {
 		return
 	}
+
 	caption := "Gakki含泪挥手告别😭"
 	filename := "unsub.gif"
 
@@ -159,10 +183,10 @@ func unsubHandler(m *tb.Message) {
 }
 
 func messageHandler(m *tb.Message) {
+	log.Infof("Message Handler: %d from %s", m.Chat.ID, m.Chat.Type)
+
 	caption := "私は　今でも空と恋をしています。"
 	var filename string
-
-	log.Infof("Message Handler: %d", m.Chat.ID)
 
 	switch m.Text {
 	case "😘":
@@ -298,14 +322,13 @@ func callbackEntrance(c *tb.Callback) {
 }
 
 func modifyPushStep2(c *tb.Callback) {
-	uid := c.Sender.ID
+	uid := c.Message.Chat.ID
 	time := strings.Replace(c.Data, "\fmodifyPushStep2SelectTime||", "", -1)
-	deleteOnePush(int64(uid), time)
+	deleteOnePush(uid, time)
 	_ = b.Respond(c, &tb.CallbackResponse{Text: "删除好了哦！"})
 
 	// edit
-	pushSeries := getPushTime(int64(c.Sender.ID))
-
+	pushSeries := getPushTime(uid)
 	var btns []tb.Btn
 	var selector = &tb.ReplyMarkup{}
 
@@ -319,7 +342,8 @@ func modifyPushStep2(c *tb.Callback) {
 }
 
 func modifyPushStep1(c *tb.Callback) {
-	pushSeries := getPushTime(int64(c.Sender.ID))
+	// this could be channel id
+	pushSeries := getPushTime(c.Message.Chat.ID)
 
 	var btns []tb.Btn
 	var selector = &tb.ReplyMarkup{}
@@ -332,14 +356,15 @@ func modifyPushStep1(c *tb.Callback) {
 	)
 
 	_ = b.Respond(c, &tb.CallbackResponse{Text: "点击按钮即可删除这个时间的推送"})
-	_, _ = b.Send(c.Sender, "选择要删除的时间", selector)
+	_, _ = b.Send(c.Message.Chat, "选择要删除的时间", selector)
 }
 
 func addPushStep2SelectTime(c *tb.Callback) {
 	newTime := strings.Replace(c.Data, "\faddPushStep2SelectTime|", "", -1)
-	respond, message := addMorePush(int64(c.Sender.ID), newTime)
+	// this id could be channel id, not initiator's id
+	respond, message := addMorePush(c.Message.Chat.ID, newTime)
 	_ = b.Respond(c, &tb.CallbackResponse{Text: respond})
-	_, _ = b.Send(c.Sender, message)
+	_, _ = b.Send(c.Message.Chat, message)
 }
 
 func addPushStep1(c *tb.Callback) {
@@ -370,9 +395,7 @@ func addPushStep1(c *tb.Callback) {
 		}
 	}
 
-	_, _ = b.Send(c.Sender, "好的，那你选个时间吧！", &tb.ReplyMarkup{
-		InlineKeyboard: inlineKeys,
-	})
+	_, _ = b.Send(c.Message.Chat, "好的，那你选个时间吧！", &tb.ReplyMarkup{InlineKeyboard: inlineKeys})
 
 }
 
