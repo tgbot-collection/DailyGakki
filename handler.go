@@ -65,8 +65,11 @@ func newHandler(m *tb.Message) {
 }
 
 func settingsHandler(m *tb.Message) {
-	log.Infof("Settings command: %d", m.Chat.ID)
+	if !permissionCheck(m) {
+		return
+	}
 
+	log.Infof("Settings command: %d", m.Chat.ID)
 	_ = b.Notify(m.Chat, tb.Typing)
 	log.Infoln("Preparing buttons...")
 	// send out push time
@@ -108,7 +111,7 @@ func channelHandler(m *tb.Message) {
 
 func subHandler(m *tb.Message) {
 	// check permission first
-	if permissionCheck(m) {
+	if !permissionCheck(m) {
 		return
 	}
 
@@ -133,6 +136,7 @@ func subHandler(m *tb.Message) {
 func permissionCheck(m *tb.Message) bool {
 	// private and channel: allow
 	// group: check admin
+	log.Infof("Checking permission for user %d on %s %d", m.Sender.ID, m.Chat.Type, m.Chat.ID)
 	var canSubscribe = false
 	if m.Private() || m.Chat.Type == "channel" {
 		canSubscribe = true
@@ -144,19 +148,20 @@ func permissionCheck(m *tb.Message) bool {
 			}
 		}
 	}
+	log.Infof("User %d on %s %d permission is %v", m.Sender.ID, m.Chat.Type, m.Chat.ID, canSubscribe)
 
 	//
 	if !canSubscribe {
 		log.Infof("Denied subscribe request for: %d", m.Sender.ID)
 		_ = b.Notify(m.Chat, tb.Typing)
 		_, _ = b.Send(m.Chat, "ええ😉只有管理员才能进行设置哦")
-		return true
+		return false
 	}
-	return false
+	return true
 }
 
 func unsubHandler(m *tb.Message) {
-	if permissionCheck(m) {
+	if !permissionCheck(m) {
 		return
 	}
 
