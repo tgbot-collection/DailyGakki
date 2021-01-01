@@ -59,8 +59,10 @@ func newHandler(m *tb.Message) {
 	// 默认发送3张
 	_ = b.Notify(m.Chat, tb.Typing)
 	sendAlbum := generatePhotos()
+	log.Infof("Photos have been chosen.")
 	_ = b.Notify(m.Chat, tb.UploadingPhoto)
 	_, _ = b.SendAlbum(m.Chat, sendAlbum)
+	log.Infof("Album has been sent to %d", m.Chat.ID)
 
 }
 
@@ -99,13 +101,28 @@ func settingsHandler(m *tb.Message) {
 
 func channelHandler(m *tb.Message) {
 	log.Infof("Channel message Handler: %d from %s", m.Chat.ID, m.Chat.Type)
+	me := b.Me.Username
+
 	switch m.Text {
-	case "/subscribe":
-		subHandler(m)
-	case "/unsubscribe":
-		unsubHandler(m)
-	case "/settings":
+	case "/start" + "@" + me:
+		startHandler(m)
+	case "/about" + "@" + me:
+		aboutHandler(m)
+	case "/new" + "@" + me:
+		newHandler(m)
+	case "/settings" + "@" + me:
 		settingsHandler(m)
+	case "/subscribe" + "@" + me:
+		subHandler(m)
+	case "/unsubscribe" + "@" + me:
+		unsubHandler(m)
+	case "/status" + "@" + me:
+		statusHandler(m)
+	case "/submit" + "@" + me:
+		submitHandler(m)
+	case "/ping" + "@" + me:
+		pingHandler(m)
+
 	default:
 		log.Infof("Oops. %s is not a command. Ignore it.", m.Text)
 	}
@@ -138,7 +155,8 @@ func subHandler(m *tb.Message) {
 func permissionCheck(m *tb.Message) bool {
 	// private and channel: allow
 	// group: check admin
-	log.Infof("Checking permission for user %d on %s %d", m.Sender.ID, m.Chat.Type, m.Chat.ID)
+	// in channel there's no m.Sender . In channel bot is always admin
+	log.Infof("Checking permission for user on %s", m.Chat.ID, m.Chat.Type)
 	var canSubscribe = false
 	if m.Private() || m.Chat.Type == "channel" {
 		canSubscribe = true
@@ -150,7 +168,7 @@ func permissionCheck(m *tb.Message) bool {
 			}
 		}
 	}
-	log.Infof("User %d on %s %d permission is %v", m.Sender.ID, m.Chat.Type, m.Chat.ID, canSubscribe)
+	log.Infof("User %d on %s  permission is %v", m.Chat.ID, m.Chat.Type, canSubscribe)
 
 	//
 	if !canSubscribe {
@@ -251,23 +269,6 @@ func statusHandler(m *tb.Message) {
 	} else {
 		_, _ = b.Send(m.Chat, "还木有每日Gakki💔")
 	}
-}
-
-func checkSubscribePermission(m *tb.Message) (allow bool) {
-	allow = false
-	// private and channel: allow
-	// group: check admin
-	if m.Private() || m.Chat.Type == "channel" {
-		allow = true
-	} else {
-		admins, _ := b.AdminsOf(m.Chat)
-		for _, admin := range admins {
-			if admin.User.ID == m.Sender.ID {
-				allow = true
-			}
-		}
-	}
-	return
 }
 
 func photoHandler(m *tb.Message) {
