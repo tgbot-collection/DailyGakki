@@ -11,21 +11,32 @@ import (
 )
 
 func scheduler() {
-	log.Infoln("Start scheduler...")
-	sendList := readJSON()
-	log.Infof("Total count: %d", len(sendList))
+	currentWindow := time.Now().Format("15:04")
+	log.Infof("Start scheduler as of %s...", currentWindow)
 
-	for _, v := range sendList {
-		log.Infof("Send message to: %d", v.ChatId)
+	allData := readJSON()
+	var sendList = make(map[string][]int64)
 
-		m := tb.Message{
-			Sender: &tb.User{ID: int(v.ChatId)},
+	log.Infof("Analysing data now...")
+	for _, u := range allData {
+		for _, t := range u.Time {
+			sendList[t] = append(sendList[t], u.ChatId)
 		}
-		time.Sleep(time.Second * 30)
+	}
+
+	log.Infof("Total count as of %s: %d", currentWindow, len(sendList))
+
+	for _, v := range sendList[currentWindow] {
+		// v is user id
+		log.Infof("Sending message to: %d", v)
+		m := tb.Message{Sender: &tb.User{ID: int(v)}}
+		// If you're sending bulk notifications to multiple users,
+		//the API will not allow more than 30 messages per second or so.
 		_ = b.Notify(m.Sender, tb.Typing)
 		sendAlbum := generatePhotos()
 		_ = b.Notify(m.Sender, tb.UploadingPhoto)
 		_, _ = b.SendAlbum(m.Sender, sendAlbum)
+		time.Sleep(time.Second * 5)
 	}
 
 }

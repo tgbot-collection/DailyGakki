@@ -65,48 +65,57 @@ func newHandler(m *tb.Message) {
 }
 
 func settingsHandler(m *tb.Message) {
-	log.Infof("Settings command: %d", m.Chat.ID)
+	if !permissionCheck(m) {
+		return
+	}
 
+	log.Infof("Settings command: %d", m.Chat.ID)
 	_ = b.Notify(m.Chat, tb.Typing)
-	_, _ = b.Send(m.Chat, "在这里可以设置每日推送时间和每日推送次数")
+	log.Infoln("Preparing buttons...")
+	// send out push time
 	var btns []tb.Btn
 	var selector = &tb.ReplyMarkup{}
-
-	btn := selector.Data("Placeholder", fmt.Sprintf("Placeholder%s%d",
-		"Placeholder", m.Chat.ID), "Placeholder")
-	//registerButtonNextStep(btn, "addServiceButton")
-	btns = append(btns, btn)
-
+	add := selector.Data("增加推送时间", "AddPushStep1")
+	modify := selector.Data("修改推送时间", "ModifyPush")
+	btns = append(btns, add, modify)
 	selector.Inline(
 		selector.Row(btns...),
 	)
 
 	_ = b.Notify(m.Chat, tb.Typing)
-	_, _ = b.Send(m.Chat, "呀！这部分功能还没做！😅", selector)
+	log.Infoln("Retrieving push time...")
+	pushTimeStr := strings.Join(getPushTime(m.Chat.ID), " ")
+	if pushTimeStr == "" {
+		message := fmt.Sprintf("哼假粉😕，都没有 /subscribe 还想看！")
+		_, _ = b.Send(m.Chat, message)
+	} else {
+		message := fmt.Sprintf("你目前的推送时间有：%s，你想要增加还是删除？", pushTimeStr)
+		_, _ = b.Send(m.Chat, message, selector)
+	}
 
 }
 
 func channelHandler(m *tb.Message) {
-	if m.Text == "/subscribe" {
+	log.Infof("Channel message Handler: %d from %s", m.Chat.ID, m.Chat.Type)
+	switch m.Text {
+	case "/subscribe":
 		subHandler(m)
-	} else if m.Text == "/unsubscribe" {
+	case "/unsubscribe":
 		unsubHandler(m)
-	} else {
+	case "/settings":
+		settingsHandler(m)
+	default:
 		log.Infof("Oops. %s is not a command. Ignore it.", m.Text)
 	}
 }
 
 func subHandler(m *tb.Message) {
 	// check permission first
-	canSubscribe := checkSubscribePermission(m)
-	if !canSubscribe {
-		log.Infof("Denied subscribe request for: %d", m.Sender.ID)
-		_ = b.Notify(m.Chat, tb.Typing)
-		_, _ = b.Send(m.Chat, "ええ😉只有管理员才能进行设置哦")
+	if !permissionCheck(m) {
 		return
 	}
 
-	caption := "已经订阅成功啦！将在每晚18:11准时为你推送最可爱的Gakki！"
+	caption := "已经订阅成功啦！将在每晚18:11准时为你推送最可爱的Gakki！如有需要可在 /settings 中更改时间和频率"
 	filename := "sub.gif"
 
 	log.Infof("Sub command: %d", m.Chat.ID)
@@ -120,18 +129,42 @@ func subHandler(m *tb.Message) {
 		log.Warnf("%s send failed %v", filename, err)
 	}
 
-	add(m.Chat.ID)
+	addInitSub(m.Chat.ID)
 
 }
 
-func unsubHandler(m *tb.Message) {
-	canSubscribe := checkSubscribePermission(m)
+func permissionCheck(m *tb.Message) bool {
+	// private and channel: allow
+	// group: check admin
+	log.Infof("Checking permission for user %d on %s %d", m.Sender.ID, m.Chat.Type, m.Chat.ID)
+	var canSubscribe = false
+	if m.Private() || m.Chat.Type == "channel" {
+		canSubscribe = true
+	} else {
+		admins, _ := b.AdminsOf(m.Chat)
+		for _, admin := range admins {
+			if admin.User.ID == m.Sender.ID {
+				canSubscribe = true
+			}
+		}
+	}
+	log.Infof("User %d on %s %d permission is %v", m.Sender.ID, m.Chat.Type, m.Chat.ID, canSubscribe)
+
+	//
 	if !canSubscribe {
 		log.Infof("Denied subscribe request for: %d", m.Sender.ID)
 		_ = b.Notify(m.Chat, tb.Typing)
 		_, _ = b.Send(m.Chat, "ええ😉只有管理员才能进行设置哦")
+		return false
+	}
+	return true
+}
+
+func unsubHandler(m *tb.Message) {
+	if !permissionCheck(m) {
 		return
 	}
+
 	caption := "Gakki含泪挥手告别😭"
 	filename := "unsub.gif"
 
@@ -155,11 +188,10 @@ func unsubHandler(m *tb.Message) {
 }
 
 func messageHandler(m *tb.Message) {
-	fmt.Println(1111)
+	log.Infof("Message Handler: %d from %s", m.Chat.ID, m.Chat.Type)
+
 	caption := "私は　今でも空と恋をしています。"
 	var filename string
-
-	log.Infof("Message Handler: %d", m.Chat.ID)
 
 	switch m.Text {
 	case "😘":
@@ -275,23 +307,129 @@ func photoHandler(m *tb.Message) {
 }
 
 func callbackEntrance(c *tb.Callback) {
+	log.Infof("Initiating callback data %s from %d", c.Data, c.Sender.ID)
 	// this callback interacts with requester
-	//\fYes|4853|123133
-	splits := strings.Split(c.Data, "|")
-	action, mid := splits[0], splits[1]
-	cid, _ := strconv.ParseInt(splits[2], 10, 64)
+	switch {
+	case strings.HasPrefix(c.Data, "\fYes"):
+		approveCallback(c)
+	case strings.HasPrefix(c.Data, "\fNo"):
+		denyCallback(c)
+	case c.Data == "\fAddPushStep1":
+		addPushStep1(c)
+	case strings.HasPrefix(c.Data, "\faddPushStep2SelectTime"):
+		addPushStep2SelectTime(c)
+	case strings.HasPrefix(c.Data, "\fModifyPush"):
+		modifyPushStep1(c)
+	case strings.HasPrefix(c.Data, "\fmodifyPushStep2SelectTime||"):
+		modifyPushStep2(c)
 
-	botM := tb.StoredMessage{MessageID: mid, ChatID: cid}
-
-	if action == "\fYes" {
-		_ = b.Respond(c, &tb.CallbackResponse{Text: "Approved"})
-		approveAction(c.Message.ReplyTo)
-		_, _ = b.Edit(botM, "你的图片被接受了😊")
-
-	} else if action == "\fNo" {
-		_ = b.Respond(c, &tb.CallbackResponse{Text: "Denied"})
-		_, _ = b.Edit(botM, "你的图片被拒绝了😫")
 	}
+}
+
+func modifyPushStep2(c *tb.Callback) {
+	uid := c.Message.Chat.ID
+	time := strings.Replace(c.Data, "\fmodifyPushStep2SelectTime||", "", -1)
+	deleteOnePush(uid, time)
+	_ = b.Respond(c, &tb.CallbackResponse{Text: "删除好了哦！"})
+
+	// edit
+	pushSeries := getPushTime(uid)
+	var btns []tb.Btn
+	var selector = &tb.ReplyMarkup{}
+
+	for _, v := range pushSeries {
+		btns = append(btns, selector.Data(v, "modifyPushStep2SelectTime||"+v))
+	}
+	selector.Inline(
+		selector.Row(btns...),
+	)
+	_, _ = b.EditReplyMarkup(c.Message, selector)
+}
+
+func modifyPushStep1(c *tb.Callback) {
+	// this could be channel id
+	pushSeries := getPushTime(c.Message.Chat.ID)
+
+	var btns []tb.Btn
+	var selector = &tb.ReplyMarkup{}
+
+	for _, v := range pushSeries {
+		btns = append(btns, selector.Data(v, "modifyPushStep2SelectTime||"+v))
+	}
+	selector.Inline(
+		selector.Row(btns...),
+	)
+
+	_ = b.Respond(c, &tb.CallbackResponse{Text: "点击按钮即可删除这个时间的推送"})
+	_, _ = b.Send(c.Message.Chat, "选择要删除的时间", selector)
+}
+
+func addPushStep2SelectTime(c *tb.Callback) {
+	newTime := strings.Replace(c.Data, "\faddPushStep2SelectTime|", "", -1)
+	// this id could be channel id, not initiator's id
+	respond, message := addMorePush(c.Message.Chat.ID, newTime)
+	_ = b.Respond(c, &tb.CallbackResponse{Text: respond})
+	_, _ = b.Send(c.Message.Chat, message)
+}
+
+func addPushStep1(c *tb.Callback) {
+	// duplicate time, ignore here
+	var inlineKeys [][]tb.InlineButton
+
+	var unique []tb.InlineButton
+	unique = append(unique, tb.InlineButton{
+		Unique: fmt.Sprintf("addPushStep2SelectTime|%s", "18:11"),
+		Text:   "18:11",
+	})
+	inlineKeys = append(inlineKeys, unique)
+
+	var btns []tb.InlineButton
+	var count = 1
+	for _, t := range timeSeries() {
+		if count <= 5 {
+			var temp = tb.InlineButton{
+				Unique: fmt.Sprintf("addPushStep2SelectTime|%s", t),
+				Text:   t,
+			}
+			btns = append(btns, temp)
+			count++
+		} else {
+			count = 1
+			inlineKeys = append(inlineKeys, btns)
+			btns = []tb.InlineButton{}
+		}
+	}
+
+	_, _ = b.Send(c.Message.Chat, "好的，那你选个时间吧！", &tb.ReplyMarkup{InlineKeyboard: inlineKeys})
+
+}
+
+func getStoredMessage(data string) tb.StoredMessage {
+	// data Yes|5159|123456789
+	splits := strings.Split(data, "|")
+	cid, _ := strconv.ParseInt(splits[2], 10, 64)
+	botM := tb.StoredMessage{MessageID: splits[1], ChatID: cid}
+	return botM
+}
+
+func approveCallback(c *tb.Callback) {
+	log.Infof("approve new photos from %s", c.Data)
+	botM := getStoredMessage(c.Data)
+
+	approveAction(c.Message.ReplyTo)
+	_ = b.Respond(c, &tb.CallbackResponse{Text: "Approved"})
+	_, _ = b.Edit(botM, "你的图片被接受了😊")
+
+	_ = b.Delete(c.Message)         // this message
+	_ = b.Delete(c.Message.ReplyTo) // original message with photo
+}
+
+func denyCallback(c *tb.Callback) {
+	log.Infof("deny new photos from %s", c.Data)
+	botM := getStoredMessage(c.Data)
+
+	_ = b.Respond(c, &tb.CallbackResponse{Text: "Denied"})
+	_, _ = b.Edit(botM, "你的图片被拒绝了😫")
 
 	_ = b.Delete(c.Message)         // this message
 	_ = b.Delete(c.Message.ReplyTo) // original message with photo

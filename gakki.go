@@ -52,6 +52,7 @@ By %s %s
 
 	c := cron.New()
 	_, _ = c.AddFunc("11 18 * * *", scheduler)
+	_, _ = c.AddFunc("*/30 7-22 * * *", scheduler)
 	c.Start()
 	b.Handle("/start", startHandler)
 	b.Handle("/about", aboutHandler)

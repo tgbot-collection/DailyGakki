@@ -11,8 +11,9 @@ var photosPath = os.Getenv("PHOTOS")
 var token = os.Getenv("TOKEN")
 var reviewer = os.Getenv("REVIEWER")
 
-type User struct {
-	ChatId int64 `json:"chat_id"`
-	Count  string
-	Time   int64
+type userConfig struct {
+	ChatId int64    `json:"chat_id"`
+	Time   []string `json:"time"`
 }
+
+type user map[int64]*userConfig

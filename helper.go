@@ -12,73 +12,97 @@ import (
 	"math/rand"
 	"os"
 	"path/filepath"
+	"strings"
 	"time"
 )
 
-func readJSON() []User {
+func readJSON() user {
 	log.Infoln("Read json file...")
 	jsonFile, _ := os.Open("database.json")
 	decoder := json.NewDecoder(jsonFile)
 
-	var db []User
-	err = decoder.Decode(&db)
+	var config user
+	err = decoder.Decode(&config)
 	_ = jsonFile.Close()
-	return db
-
+	return config
 }
 
-func add(id int64) {
+func addInitSub(id int64) {
 	log.Infof("Add subscriber %v", id)
 	currentJSON := readJSON()
-	// check and then add
-	var shouldWrite = true
-	for _, v := range currentJSON {
-		if v.ChatId == id {
-			shouldWrite = false
-		}
-	}
-	if shouldWrite {
-		currentJSON = append(currentJSON, User{
+
+	// check if current user has already subscribed
+	if _, ok := currentJSON[id]; !ok {
+		// create user object
+		currentJSON[id] = &userConfig{
 			ChatId: id,
-		})
-		file, _ := json.MarshalIndent(currentJSON, "", "\t")
-		log.Infoln("Record json %v", currentJSON)
-
-		err := ioutil.WriteFile("database.json", file, 0644)
-		if err != nil {
-			log.Errorf("Write json failed %v", err)
+			Time:   []string{"18:11"},
 		}
+
+		saveJSON(currentJSON)
+	}
+}
+
+func addMorePush(id int64, time string) (respond, message string) {
+	log.Infof("Add more push for %d at %s", id, time)
+	currentJSON := readJSON()
+
+	currentPush := currentJSON[id].Time
+	result := isContain(currentPush, time)
+	if result {
+		return "设置失败", "这个时间已经有了哦，小盆友你又调皮了呢😝"
 	}
 
+	currentPush = append(currentPush, time)
+	currentJSON[id].Time = currentPush
+	saveJSON(currentJSON)
+	return "设置成功", "你现在的推送时间为 " + strings.Join(currentPush, " ")
+}
+
+func deleteOnePush(id int64, time string) {
+	log.Infof("delete push entry for %d at %s", id, time)
+	currentJSON := readJSON()
+
+	currentPush := currentJSON[id].Time
+	currentJSON[id].Time = removeElement(currentPush, time)
+	saveJSON(currentJSON)
+
+}
+func removeElement(full []string, s string) (ret []string) {
+	for _, v := range full {
+		if v != s {
+			ret = append(ret, v)
+		}
+	}
+	return
+}
+
+func isContain(items []string, item string) bool {
+	for _, eachItem := range items {
+		if eachItem == item {
+			return true
+		}
+	}
+	return false
 }
 
 func remove(id int64) {
+	// delete all
 	log.Infof("Delete subscriber %v", id)
 	currentJSON := readJSON()
+	delete(currentJSON, id)
 
-	var this []User
-	var shouldWrite = false
-
-	for index, v := range currentJSON {
-		if v.ChatId == id {
-			shouldWrite = true
-			this = removeElement(currentJSON, index)
-		}
-	}
-	if shouldWrite {
-		file, _ := json.MarshalIndent(this, "", "\t")
-		log.Infoln("Record json %v", currentJSON)
-		err := ioutil.WriteFile("database.json", file, 0644)
-		if err != nil {
-			log.Errorf("Write json failed %v", err)
-		}
-	}
+	saveJSON(currentJSON)
 
 }
 
-func removeElement(s []User, i int) []User {
-	s[len(s)-1], s[i] = s[i], s[len(s)-1]
-	return s[:len(s)-1]
+func saveJSON(current user) {
+	file, _ := json.MarshalIndent(current, "", "\t")
+	log.Infoln("Record json %v", current)
+	err := ioutil.WriteFile("database.json", file, 0644)
+	if err != nil {
+		log.Errorf("Write json failed %v", err)
+	}
 }
 
 func listAll(path string) (photo map[int]string) {
@@ -122,4 +146,18 @@ func generatePhotos() (sendAlbum tb.Album) {
 	p := &tb.Photo{File: tb.FromDisk(chosen[0]), Caption: "怎么样，喜欢今日份的Gakki吗🤩"}
 	sendAlbum = append(sendAlbum, p)
 	return
+}
+
+func timeSeries() (series []string) {
+	var base int64 = 581983200
+	for i := 0; i <= (22-7)*2; i++ {
+		base += 60 * 30
+		series = append(series, time.Unix(base, 0).Format("15:04"))
+	}
+	return series
+}
+
+func getPushTime(uid int64) []string {
+	var config = readJSON()
+	return config[uid].Time
 }
