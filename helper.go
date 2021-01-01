@@ -159,5 +159,10 @@ func timeSeries() (series []string) {
 
 func getPushTime(uid int64) []string {
 	var config = readJSON()
-	return config[uid].Time
+	if _, ok := config[uid]; ok {
+		//存在
+		return config[uid].Time
+	} else {
+		return []string{}
+	}
 }

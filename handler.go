@@ -85,6 +85,8 @@ func settingsHandler(m *tb.Message) {
 	_ = b.Notify(m.Chat, tb.Typing)
 	log.Infoln("Retrieving push time...")
 	pushTimeStr := strings.Join(getPushTime(m.Chat.ID), " ")
+	log.Infof("Push time is %s ...", pushTimeStr)
+
 	if pushTimeStr == "" {
 		message := fmt.Sprintf("哼假粉😕，都没有 /subscribe 还想看！")
 		_, _ = b.Send(m.Chat, message)
