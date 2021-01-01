@@ -11,7 +11,6 @@ import (
 )
 
 func scheduler() {
-	// TODO
 	log.Infoln("Start scheduler...")
 
 	currentWindow := time.Now().Format("15:04")

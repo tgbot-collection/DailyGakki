@@ -71,7 +71,7 @@ func settingsHandler(m *tb.Message) {
 	// send out push time
 	var btns []tb.Btn
 	var selector = &tb.ReplyMarkup{}
-	add := selector.Data("增加推送时间", "AddPush")
+	add := selector.Data("增加推送时间", "AddPushStep1")
 	modify := selector.Data("修改推送时间", "ModifyPush")
 	btns = append(btns, add, modify)
 	selector.Inline(
@@ -281,25 +281,25 @@ func callbackEntrance(c *tb.Callback) {
 	log.Infof("Initiating callback data %s from %d", c.Data, c.Sender.ID)
 	// this callback interacts with requester
 	switch {
-	case c.Data == "\fAddPush":
-		addPushInit(c)
 	case strings.HasPrefix(c.Data, "\fYes"):
 		approveCallback(c)
 	case strings.HasPrefix(c.Data, "\fNo"):
 		denyCallback(c)
-	case strings.HasPrefix(c.Data, "\fSubTime"):
-		addMore(c)
+	case c.Data == "\fAddPushStep1":
+		addPushStep1(c)
+	case strings.HasPrefix(c.Data, "\faddPushStep2SelectTime"):
+		addPushStep2SelectTime(c)
 	case strings.HasPrefix(c.Data, "\fModifyPush"):
-		modifyPush(c)
-	case strings.HasPrefix(c.Data, "\fDeleteThisTime"):
-		deletepushentry(c)
+		modifyPushStep1(c)
+	case strings.HasPrefix(c.Data, "\fmodifyPushStep2SelectTime||"):
+		modifyPushStep2(c)
 
 	}
 }
 
-func deletepushentry(c *tb.Callback) {
+func modifyPushStep2(c *tb.Callback) {
 	uid := c.Sender.ID
-	time := strings.Replace(c.Data, "\fDeleteThisTime", "", -1)
+	time := strings.Replace(c.Data, "\fmodifyPushStep2SelectTime||", "", -1)
 	deleteOnePush(int64(uid), time)
 	_ = b.Respond(c, &tb.CallbackResponse{Text: "删除好了哦！"})
 
@@ -310,7 +310,7 @@ func deletepushentry(c *tb.Callback) {
 	var selector = &tb.ReplyMarkup{}
 
 	for _, v := range pushSeries {
-		btns = append(btns, selector.Data(v, "DeleteThisTime"+v))
+		btns = append(btns, selector.Data(v, "modifyPushStep2SelectTime||"+v))
 	}
 	selector.Inline(
 		selector.Row(btns...),
@@ -318,14 +318,14 @@ func deletepushentry(c *tb.Callback) {
 	_, _ = b.EditReplyMarkup(c.Message, selector)
 }
 
-func modifyPush(c *tb.Callback) {
+func modifyPushStep1(c *tb.Callback) {
 	pushSeries := getPushTime(int64(c.Sender.ID))
 
 	var btns []tb.Btn
 	var selector = &tb.ReplyMarkup{}
 
 	for _, v := range pushSeries {
-		btns = append(btns, selector.Data(v, "DeleteThisTime"+v))
+		btns = append(btns, selector.Data(v, "modifyPushStep2SelectTime||"+v))
 	}
 	selector.Inline(
 		selector.Row(btns...),
@@ -335,20 +335,20 @@ func modifyPush(c *tb.Callback) {
 	_, _ = b.Send(c.Sender, "选择要删除的时间", selector)
 }
 
-func addMore(c *tb.Callback) {
-	newtime := strings.Replace(c.Data, "\fSubTime", "", -1)
-	respond, message := addMorePush(int64(c.Sender.ID), newtime)
+func addPushStep2SelectTime(c *tb.Callback) {
+	newTime := strings.Replace(c.Data, "\faddPushStep2SelectTime|", "", -1)
+	respond, message := addMorePush(int64(c.Sender.ID), newTime)
 	_ = b.Respond(c, &tb.CallbackResponse{Text: respond})
 	_, _ = b.Send(c.Sender, message)
 }
 
-func addPushInit(c *tb.Callback) {
+func addPushStep1(c *tb.Callback) {
 	// duplicate time, ignore here
 	var inlineKeys [][]tb.InlineButton
 
 	var unique []tb.InlineButton
 	unique = append(unique, tb.InlineButton{
-		Unique: fmt.Sprintf("SubTime%s", "18:11"),
+		Unique: fmt.Sprintf("addPushStep2SelectTime|%s", "18:11"),
 		Text:   "18:11",
 	})
 	inlineKeys = append(inlineKeys, unique)
@@ -358,7 +358,7 @@ func addPushInit(c *tb.Callback) {
 	for _, t := range timeSeries() {
 		if count <= 5 {
 			var temp = tb.InlineButton{
-				Unique: fmt.Sprintf("SubTime%s", t),
+				Unique: fmt.Sprintf("addPushStep2SelectTime|%s", t),
 				Text:   t,
 			}
 			btns = append(btns, temp)
