@@ -17,7 +17,7 @@ import (
 import "github.com/tgbot-collection/tgbot_ping"
 
 func startHandler(m *tb.Message) {
-	caption := "欢迎来到每日最可爱的Gakki！\n我会每天定是为你发送最可爱的Gakki！"
+	caption := "欢迎来到每日最可爱的Gakki！\n我会每天定时为你发送最可爱的Gakki！"
 	filename := "start.gif"
 
 	log.Infof("Start command: %d", m.Chat.ID)
