@@ -17,7 +17,7 @@ import (
 )
 
 func readJSON() user {
-	log.Infoln("Read json file...")
+	log.Debugf("Read json file...")
 	jsonFile, _ := os.Open("database.json")
 	decoder := json.NewDecoder(jsonFile)
 
@@ -98,7 +98,7 @@ func remove(id int64) {
 
 func saveJSON(current user) {
 	file, _ := json.MarshalIndent(current, "", "\t")
-	log.Infoln("Record json %v", current)
+	log.Infof("Record json %v", current)
 	err := ioutil.WriteFile("database.json", file, 0644)
 	if err != nil {
 		log.Errorf("Write json failed %v", err)
@@ -106,7 +106,7 @@ func saveJSON(current user) {
 }
 
 func listAll(path string) (photo map[int]string) {
-	log.Infoln("List all photos...")
+	log.Debugln("List all photos...")
 
 	photo = make(map[int]string)
 	files, _ := ioutil.ReadDir(path)
@@ -121,7 +121,7 @@ func listAll(path string) (photo map[int]string) {
 }
 
 func ChoosePhotos(count int) (paths []string) {
-	log.Infof("Choose %d photo(s)", count)
+	log.Debugf("Choose %d photo(s)", count)
 	photoMap := listAll(photosPath)
 	rand.Seed(time.Now().Unix())
 	for i := 1; i <= count; i++ {
@@ -130,7 +130,6 @@ func ChoosePhotos(count int) (paths []string) {
 		delete(photoMap, index)
 	}
 
-	log.Infof("Photo: %v", paths)
 	return
 }
 

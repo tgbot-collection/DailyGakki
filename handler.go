@@ -23,7 +23,7 @@ func startHandler(m *tb.Message) {
 	log.Infof("Start command: %d", m.Chat.ID)
 	_ = b.Notify(m.Chat, tb.UploadingPhoto)
 	data, _ := Asset(filepath.Join("images", filename))
-	log.Infof("Find %s from memory...", filename)
+	log.Debugf("Find %s from memory...", filename)
 
 	p := &tb.Animation{File: tb.FromReader(bytes.NewReader(data)), FileName: filename, Caption: caption}
 	_, err := b.Send(m.Chat, p)
@@ -43,7 +43,7 @@ func aboutHandler(m *tb.Message) {
 	log.Infof("About command: %d", m.Chat.ID)
 	_ = b.Notify(m.Chat, tb.UploadingPhoto)
 	data, _ := Asset(filepath.Join("images", filename))
-	log.Infof("Find %s from memory...", filename)
+	log.Debugf("Find %s from memory...", filename)
 
 	p := &tb.Animation{File: tb.FromReader(bytes.NewReader(data)), FileName: filename, Caption: caption}
 	_, err := b.Send(m.Chat, p)
@@ -55,14 +55,13 @@ func aboutHandler(m *tb.Message) {
 
 func newHandler(m *tb.Message) {
 	log.Infof("New command: %d", m.Chat.ID)
-
 	// 默认发送3张
 	_ = b.Notify(m.Chat, tb.Typing)
 	sendAlbum := generatePhotos()
-	log.Infof("Photos have been chosen.")
+
 	_ = b.Notify(m.Chat, tb.UploadingPhoto)
 	_, _ = b.SendAlbum(m.Chat, sendAlbum)
-	log.Infof("Album has been sent to %d", m.Chat.ID)
+	log.Debugf("Album has been sent to %d", m.Chat.ID)
 
 }
 
@@ -73,7 +72,6 @@ func settingsHandler(m *tb.Message) {
 
 	log.Infof("Settings command: %d", m.Chat.ID)
 	_ = b.Notify(m.Chat, tb.Typing)
-	log.Infoln("Preparing buttons...")
 	// send out push time
 	var btns []tb.Btn
 	var selector = &tb.ReplyMarkup{}
@@ -85,7 +83,6 @@ func settingsHandler(m *tb.Message) {
 	)
 
 	_ = b.Notify(m.Chat, tb.Typing)
-	log.Infoln("Retrieving push time...")
 	pushTimeStr := strings.Join(getPushTime(m.Chat.ID), " ")
 	log.Infof("Push time is %s ...", pushTimeStr)
 
@@ -124,7 +121,7 @@ func channelHandler(m *tb.Message) {
 		pingHandler(m)
 
 	default:
-		log.Infof("Oops. %s is not a command. Ignore it.", m.Text)
+		log.Warnf("Oops. %s is not a command. Ignore it.", m.Text)
 	}
 }
 
@@ -140,7 +137,7 @@ func subHandler(m *tb.Message) {
 	log.Infof("Sub command: %d", m.Chat.ID)
 	_ = b.Notify(m.Chat, tb.UploadingPhoto)
 	data, _ := Asset(filepath.Join("images", filename))
-	log.Infof("Find %s from memory...", filename)
+	log.Debugf("Find %s from memory...", filename)
 
 	p := &tb.Animation{File: tb.FromReader(bytes.NewReader(data)), FileName: filename, Caption: caption}
 	_, err := b.Send(m.Chat, p)
@@ -156,7 +153,6 @@ func permissionCheck(m *tb.Message) bool {
 	// private and channel: allow
 	// group: check admin
 	// in channel there's no m.Sender . In channel bot is always admin
-	log.Infof("Checking permission for user on %s", m.Chat.ID, m.Chat.Type)
 	var canSubscribe = false
 	if m.Private() || m.Chat.Type == "channel" {
 		canSubscribe = true
@@ -172,7 +168,7 @@ func permissionCheck(m *tb.Message) bool {
 
 	//
 	if !canSubscribe {
-		log.Infof("Denied subscribe request for: %d", m.Sender.ID)
+		log.Warnf("Denied subscribe request for: %d", m.Sender.ID)
 		_ = b.Notify(m.Chat, tb.Typing)
 		_, _ = b.Send(m.Chat, "ええ😉只有管理员才能进行设置哦")
 		return false
@@ -191,7 +187,7 @@ func unsubHandler(m *tb.Message) {
 	log.Infof("Unsub command: %d", m.Chat.ID)
 	_ = b.Notify(m.Chat, tb.UploadingPhoto)
 	data, _ := Asset(filepath.Join("images", filename))
-	log.Infof("Find %s from memory...", filename)
+	log.Debugf("Find %s from memory...", filename)
 
 	p := &tb.Animation{File: tb.FromReader(bytes.NewReader(data)), FileName: filename, Caption: caption}
 	_, err := b.Send(m.Chat, p)
@@ -208,7 +204,7 @@ func unsubHandler(m *tb.Message) {
 }
 
 func messageHandler(m *tb.Message) {
-	log.Infof("Message Handler: %d from %s", m.Chat.ID, m.Chat.Type)
+	log.Debugf("Message Handler: %d from %s", m.Chat.ID, m.Chat.Type)
 
 	caption := "私は　今でも空と恋をしています。"
 	var filename string
@@ -235,10 +231,9 @@ func messageHandler(m *tb.Message) {
 		return
 	}
 
-	log.Infof("Choose %s for text %s", filename, m.Text)
+	log.Infof("Message Handler: %d from %s,Choose %s for text %s", m.Chat.ID, m.Chat.Type, filename, m.Text)
 	data, _ := Asset(filepath.Join("images", filename))
 
-	log.Infof("Send %s now...", filename)
 	_ = b.Notify(m.Chat, tb.UploadingPhoto)
 	p := &tb.Animation{File: tb.FromReader(bytes.NewReader(data)), FileName: filename, Caption: caption}
 	_, err := b.Send(m.Chat, p)

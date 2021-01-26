@@ -17,14 +17,14 @@ func scheduler() {
 	allData := readJSON()
 	var sendList = make(map[string][]int64)
 
-	log.Infof("Analysing data now...")
+	log.Debugf("Analysing data now...")
 	for _, u := range allData {
 		for _, t := range u.Time {
 			sendList[t] = append(sendList[t], u.ChatId)
 		}
 	}
 
-	log.Infof("Total count as of %s: %d", currentWindow, len(sendList[currentWindow]))
+	log.Debugf("Total count as of %s: %d", currentWindow, len(sendList[currentWindow]))
 
 	for _, v := range sendList[currentWindow] {
 		// v is user id
