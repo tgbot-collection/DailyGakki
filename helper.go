@@ -142,7 +142,7 @@ func generatePhotos() (sendAlbum tb.Album) {
 		p := &tb.Photo{File: tb.FromDisk(photoPath)}
 		sendAlbum = append(sendAlbum, p)
 	}
-	p := &tb.Photo{File: tb.FromDisk(chosen[0]), Caption: "怎么样，喜欢今日份的Gakki吗🤩"}
+	p := &tb.Photo{File: tb.FromDisk(chosen[0]), Caption: "怎么样，喜欢今日份的 Gakki 吗 😭😭😭"}
 	sendAlbum = append(sendAlbum, p)
 	return
 }

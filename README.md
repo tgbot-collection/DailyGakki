@@ -1,6 +1,5 @@
 # DailyGakki
-😚 每日分享最可爱的Gakki
-Telegram Bot🤖️
+😚 每日分享最可爱的 Gakki 老婆嫁人了😭 Telegram Bot🤖️
 
 [新垣結衣の写真](https://t.me/my_gakki_bot)
 

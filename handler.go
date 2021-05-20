@@ -17,7 +17,7 @@ import (
 import "github.com/tgbot-collection/tgbot_ping"
 
 func startHandler(m *tb.Message) {
-	caption := "欢迎来到每日最可爱的Gakki！\n我会每天定时为你发送最可爱的Gakki！"
+	caption := "欢迎来到每日最可爱的 Gakki😄\n我会每天定时为你发送最可爱的 Gakki！"
 	filename := "start.gif"
 
 	log.Infof("Start command: %d", m.Chat.ID)
@@ -34,7 +34,7 @@ func startHandler(m *tb.Message) {
 }
 
 func aboutHandler(m *tb.Message) {
-	caption := "欢迎来到每日最可爱的Gakki！\n" +
+	caption := "你老婆没啦！\n" +
 		"开发者：@BennyThink\n" +
 		"GitHub: https://github.com/tgbot-collection/DailyGakki \n" +
 		"Google Photos 地址：" + album
@@ -131,7 +131,7 @@ func subHandler(m *tb.Message) {
 		return
 	}
 
-	caption := "已经订阅成功啦！将在每晚18:11准时为你推送最可爱的Gakki！如有需要可在 /settings 中更改时间和频率"
+	caption := "已经订阅成功啦！将在每晚18:11准时为你推送最可爱的 Gakki！如有需要可在 /settings 中更改时间和频率"
 	filename := "sub.gif"
 
 	log.Infof("Sub command: %d", m.Chat.ID)
@@ -181,7 +181,7 @@ func unsubHandler(m *tb.Message) {
 		return
 	}
 
-	caption := "Gakki含泪挥手告别😭"
+	caption := "Gakki 已经不是你老婆了😒"
 	filename := "unsub.gif"
 
 	log.Infof("Unsub command: %d", m.Chat.ID)
@@ -260,9 +260,9 @@ func statusHandler(m *tb.Message) {
 		}
 	}
 	if isSub {
-		_, _ = b.Send(m.Chat, "Gakki与你同在😄")
+		_, _ = b.Send(m.Chat, "Gakki 与你同在😄")
 	} else {
-		_, _ = b.Send(m.Chat, "还木有每日Gakki💔")
+		_, _ = b.Send(m.Chat, "还木有每日 Gakki💔")
 	}
 }
 
@@ -278,7 +278,7 @@ func photoHandler(m *tb.Message) {
 	}
 
 	_ = b.Notify(m.Chat, tb.Typing)
-	botSent, _ := b.Reply(m, "你的Review已经发出去惹……请耐心等待😄")
+	botSent, _ := b.Reply(m, "你的审核已经发出去了……请耐心等待😄")
 
 	var btns []tb.Btn
 	var selector = &tb.ReplyMarkup{}
@@ -296,7 +296,7 @@ func photoHandler(m *tb.Message) {
 	fwd, err := b.Forward(mm.Sender, m, selector)
 	if err != nil {
 		log.Errorln(err)
-		_, _ = b.Edit(botSent, "呃……由于某种神秘的原因，Review请求发送失败了，你再发一下试试\n"+err.Error())
+		_, _ = b.Edit(botSent, "呃……由于某种神秘的原因，审核请求发送失败了，你再发一下试试\n"+err.Error())
 	} else {
 		_, _ = b.Reply(fwd, "请Review", selector)
 
