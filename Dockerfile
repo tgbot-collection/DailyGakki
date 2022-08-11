@@ -1,4 +1,4 @@
-FROM golang:1.17.4-alpine as builder
+FROM golang:1.19.0-alpine as builder
 
 ENV HOME=/
 RUN apk update && apk add --no-cache make ca-certificates tzdata && mkdir /build
