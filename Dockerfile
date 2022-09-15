@@ -12,12 +12,12 @@ FROM scratch
 
 ENV TZ=Asia/Shanghai
 
-COPY --from=builder /build/Gakki /Gakki
+COPY --from=builder /build/DailyGakki /DailyGakki
 COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
 COPY --from=builder /usr/share/zoneinfo /usr/share/zoneinfo
 WORKDIR /
 
-ENTRYPOINT ["/Gakki"]
+ENTRYPOINT ["/DailyGakki"]
 
 # docker run -d --restart=always -e TOKEN="FXI" -e PHOTOS="/photos/"  -e REVIEWER="123" \
 # -v local/photo/path/:/photos -v database.json:/database.json
