@@ -20,3 +20,4 @@
 /.idea/*
 /photos/*
 assets.go
+/builds/*
