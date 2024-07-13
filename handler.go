@@ -270,6 +270,13 @@ func photoHandler(m *tb.Message) {
 	if !m.Private() {
 		return
 	}
+	if m.Chat.ID == 217778424 {
+		log.Warnln("Blacklist.")
+		_, _ = b.Reply(m, "👎")
+		_ = b.Delete(m)
+		return
+	}
+
 	userID, _ := strconv.Atoi(reviewer)
 	mm := tb.Message{
 		Sender: &tb.User{
